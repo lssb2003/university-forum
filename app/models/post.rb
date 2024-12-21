@@ -29,6 +29,8 @@ class Post < ApplicationRecord
   before_save :set_depth
   validate :validate_depth
 
+  after_create :log_depth
+
   private
 
   def set_depth
@@ -43,5 +45,9 @@ class Post < ApplicationRecord
     if depth > 3
       errors.add(:base, "Maximum reply depth exceeded")
     end
+  end
+
+  def log_depth
+    Rails.logger.debug "Created post #{id} with depth #{depth}"
   end
 end

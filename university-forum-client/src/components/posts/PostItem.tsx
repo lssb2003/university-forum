@@ -1,4 +1,3 @@
-// src/components/posts/PostItem.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updatePost, deletePost, createPost } from '../../api/posts';
@@ -20,13 +19,6 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
     const [editContent, setEditContent] = useState(post.content);
     const [replyContent, setReplyContent] = useState('');
     
-    console.log('Current user:', user);
-    console.log('Post author_id:', post.author_id);
-    console.log('Post categoryId:', categoryId);
-    console.log('Can modify?:', canModifyPost(user, post.author_id, categoryId));
-    console.log('Can delete?:', canDeleteContent(user, post.author_id, categoryId));
-
-    // Mutations
     const updateMutation = useMutation({
         mutationFn: () => updatePost(post.id, editContent),
         onSuccess: () => {
@@ -74,18 +66,25 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
 
     const canModify = user?.id === post.author_id || post.can_moderate;
     const canDelete = user?.id === post.author_id || post.can_moderate;
-    
+    const isMaxDepth = post.depth >= 3;
     
     // Calculate left margin based on depth
     const depthMargin = `${post.depth * 2}rem`;
 
     return (
         <div style={{ marginLeft: depthMargin }} className="mb-4">
-            <div className="bg-white shadow-sm rounded-lg p-6">
+            <div className={`bg-white shadow-sm rounded-lg p-6 ${post.depth > 0 ? 'border-l-4 border-blue-200' : ''}`}>
                 {/* Post Header */}
                 <div className="flex justify-between">
-                    <div className="text-sm text-gray-500">
-                        {post.author?.email || 'Deleted User'} • {new Date(post.created_at).toLocaleDateString()}
+                    <div className="flex items-center space-x-2">
+                        <div className="text-sm text-gray-500">
+                            {post.author?.email || 'Deleted User'} • {new Date(post.created_at).toLocaleDateString()}
+                        </div>
+                        {post.depth > 0 && (
+                            <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full">
+                                Level {post.depth} Reply
+                            </span>
+                        )}
                     </div>
                     {!post.deleted_at && (canModify || canDelete) && (
                         <div className="space-x-2">
@@ -142,7 +141,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
                 )}
 
                 {/* Reply Button and Form */}
-                {!post.deleted_at && user && post.depth < 3 && (
+                {!post.deleted_at && user && !isMaxDepth && (
                     <div className="mt-4">
                         {!isReplying ? (
                             <button
@@ -179,10 +178,17 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
                         )}
                     </div>
                 )}
+                
+                {/* Max Depth Warning */}
+                {isMaxDepth && user && (
+                    <div className="mt-4 text-sm text-orange-600 bg-orange-50 p-2 rounded-md">
+                        Maximum reply depth (Level 3) reached. No further replies allowed at this level.
+                    </div>
+                )}
 
                 {/* Replies */}
                 {post.replies && post.replies.length > 0 && (
-                    <div className="mt-4">
+                    <div className="mt-4 space-y-4">
                         {post.replies.map(reply => (
                             <PostItem
                                 key={reply.id}

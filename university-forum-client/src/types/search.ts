@@ -47,4 +47,6 @@ export interface SearchSuggestionsResponse {
 
 export interface SearchParams {
     q: string;
+    context_type?: 'global' | 'category' | 'thread';
+    context_id?: number;
 }

@@ -4,10 +4,22 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.where(thread_id: params[:thread_id])
-                 .includes(:author, :replies)
+                 .includes(:author)
                  .root_posts
                  .order(created_at: :asc)
-                 render json: @posts, include: [ "author", "replies", "replies.author" ]
+
+    load_nested_replies(@posts)
+    render json: @posts,
+           include: [
+             "author",
+             "replies",
+             "replies.author",
+             "replies.replies",
+             "replies.replies.author",
+             "replies.replies.replies",
+             "replies.replies.replies.author"
+           ],
+           each_serializer: PostSerializer
   end
 
   def create
@@ -43,6 +55,32 @@ class PostsController < ApplicationController
   end
 
   private
+
+  def load_nested_replies(posts, current_depth = 0)
+    return if posts.empty? || current_depth >= 3
+
+    # Get all post IDs to fetch replies for
+    post_ids = posts.map(&:id)
+
+    # Fetch all replies for these posts
+    replies = Post.where(parent_id: post_ids)
+                  .includes(:author)
+                  .order(created_at: :asc)
+
+    # Group replies by parent_id
+    replies_by_parent = replies.group_by(&:parent_id)
+
+    # Assign replies to their parent posts
+    posts.each do |post|
+      child_replies = replies_by_parent[post.id] || []
+      post.replies = child_replies
+
+      # Recursively load nested replies if there are any and we haven't reached max depth
+      if child_replies.any? && current_depth < 2  # This ensures we load up to level 3
+        load_nested_replies(child_replies, current_depth + 1)
+      end
+    end
+  end
 
   def set_post
     @post = Post.find(params[:id])
