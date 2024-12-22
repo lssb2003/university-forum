@@ -5,7 +5,10 @@ class ThreadsController < ApplicationController
   before_action :authorize_moderator_action, only: [ :lock, :unlock ]
 
   def index
-    @threads = ForumThread.where(category_id: params[:category_id])
+    @threads = ForumThread
+      .where(category_id: params[:category_id])
+      .includes(:author)  # Include author to avoid N+1 queries
+      .order(updated_at: :desc)  # Sort by most recently updated
     render json: @threads
   end
 
@@ -14,7 +17,6 @@ class ThreadsController < ApplicationController
     Rails.logger.debug "User: #{current_user.inspect}"
     Rails.logger.debug "Thread category: #{@thread.category_id}"
 
-    # Only try to get moderator info if user is logged in and is a moderator
     if current_user&.moderator?
       Rails.logger.debug "Direct moderated categories: #{current_user.moderator_assignments.pluck(:category_id)}"
       Rails.logger.debug "All moderated categories (including subcategories): #{current_user.moderated_category_ids}"
@@ -28,6 +30,7 @@ class ThreadsController < ApplicationController
 
   def update
     @thread.edited_at = Time.current
+    @thread.updated_at = Time.current  # Explicitly update timestamp
     if @thread.update(thread_params)
       render json: @thread
     else
@@ -45,6 +48,7 @@ class ThreadsController < ApplicationController
 
     @thread = current_user.forum_threads.build(thread_params)
     @thread.category_id = params[:category_id]
+    @thread.updated_at = Time.current  # Set initial updated_at
 
     if @thread.save
       render json: @thread, status: :created

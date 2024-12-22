@@ -141,7 +141,7 @@ const ThreadList: React.FC = () => {
                     {threads?.length === 0 && (
                         <div className="text-center py-12">
                             <p className="text-gray-500 text-lg">No threads yet in this category.</p>
-                            {user && (
+                            {user && !user.banned_at && ( // Ensure banned users can't see the link
                                 <p className="mt-2 text-gray-600">
                                     Be the first to{' '}
                                     <Link 

@@ -25,8 +25,8 @@ export const canModifyPost = (user: User | null, authorId: number, categoryId?: 
 
 export const canModifyThread = (user: User | null, authorId: number, categoryId?: number): boolean => {
     if (!user) return false;
-    if (user.role === 'admin') return true;
     if (user.banned_at) return false;
+    if (user.role === 'admin') return true;
     if (user.id === authorId) return true;
     return canModerateCategory(user, categoryId);
 };
@@ -50,6 +50,7 @@ export const canLockThread = (user: User | null, categoryId: number): boolean =>
     });
 
     if (!user) return false;
+    if (user.banned_at) return false;
     if (user.role === 'admin') return true;
     
     // Convert categoryId to number to ensure correct comparison
@@ -78,6 +79,7 @@ export const isAdmin = (user: User | null): boolean => {
 
 export const canModerateCategory = (user: User | null, categoryId: number | undefined): boolean => {
     if (!user || !categoryId) return false;
+    if (user.banned_at) return false;
     if (user.role === 'admin') return true;
 
     const cachedPermission = permissionCache.getPermission(

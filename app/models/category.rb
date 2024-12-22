@@ -6,13 +6,18 @@ class Category < ApplicationRecord
   validate :prevent_self_referential_parent, if: -> { parent_category_id.present? }
 
   belongs_to :parent_category, class_name: "Category", optional: true
-  has_many :subcategories, class_name: "Category", foreign_key: "parent_category_id", dependent: :nullify
+  has_many :subcategories, -> { order(created_at: :desc) },
+            class_name: "Category",
+            foreign_key: "parent_category_id",
+            dependent: :nullify
   has_many :moderator_assignments, class_name: "Moderator", dependent: :destroy
   has_many :moderators, through: :moderator_assignments, source: :user
-  # Fix this association
-  has_many :forum_threads, dependent: :destroy  # Changed from threads to forum_threads
+  has_many :forum_threads, dependent: :destroy
 
   before_destroy :ensure_no_circular_references
+
+  scope :ordered, -> { order(created_at: :desc) }
+  scope :top_level_categories, -> { where(parent_category_id: nil).ordered }
 
   def self_and_descendant_ids
     descendant_ids = Category.where(parent_category_id: id).pluck(:id)

@@ -170,31 +170,57 @@ const UserManagement: React.FC = () => {
     const [modalError, setModalError] = useState<string | null>(null);
     const [banDialogUser, setBanDialogUser] = useState<User | null>(null);
 
-    const { data: users, isLoading, error } = useQuery({
+    const { data: users = [], isLoading, error } = useQuery({
         queryKey: ['users'],
-        queryFn: getUsers
+        queryFn: getUsers,
+        select: (data) => {
+            // Sort users by creation date to maintain consistent order
+            return [...data].sort((a, b) => {
+                // Primary sort by created_at
+                const dateComparison = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                return dateComparison;
+            });
+        }
     });
 
     const banMutation = useMutation({
         mutationFn: ({ userId, reason }: { userId: number; reason: string }) =>
             banUser(userId, reason),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+        onSuccess: (updatedUser) => {
+            queryClient.setQueryData(['users'], (oldData: User[] | undefined) => {
+                if (!oldData) return oldData;
+                // Update the user while maintaining array order
+                return oldData.map(user => 
+                    user.id === updatedUser.id ? updatedUser : user
+                );
+            });
         },
     });
 
     const unbanMutation = useMutation({
         mutationFn: unbanUser,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+        onSuccess: (updatedUser) => {
+            queryClient.setQueryData(['users'], (oldData: User[] | undefined) => {
+                if (!oldData) return oldData;
+                // Update the user while maintaining array order
+                return oldData.map(user => 
+                    user.id === updatedUser.id ? updatedUser : user
+                );
+            });
         },
     });
 
     const updateRoleMutation = useMutation({
         mutationFn: (data: { userId: number; role: string }) => 
             updateUserRole(data.userId, data.role),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+        onSuccess: (updatedUser) => {
+            queryClient.setQueryData(['users'], (oldData: User[] | undefined) => {
+                if (!oldData) return oldData;
+                // Update the user while maintaining array order
+                return oldData.map(user => 
+                    user.id === updatedUser.id ? updatedUser : user
+                );
+            });
         },
     });
 

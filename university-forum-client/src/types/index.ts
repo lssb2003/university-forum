@@ -48,6 +48,8 @@ export interface Category {
     subcategories: Category[];
     moderators?: ModeratorAssignment[];
     edited_at: string | null;
+    created_at: string;    // Added this line
+    updated_at: string;    // Added this line for completeness
 }
 
 

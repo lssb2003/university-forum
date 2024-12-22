@@ -11,6 +11,8 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :password, length: { minimum: 6 }, if: -> { new_record? || password.present? }
 
+  scope :ordered, -> { order(created_at: :desc) }
+
   # Existing methods - keep as is
   def password_reset_valid?
     (reset_password_sent_at + 1.hour) > Time.current if reset_password_sent_at

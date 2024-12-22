@@ -122,7 +122,14 @@ const CategoryManagement: React.FC = () => {
 
     const { data: categories = [], isLoading } = useQuery({
         queryKey: ['categories'],
-        queryFn: getCategories
+        queryFn: getCategories,
+        select: (data) => {
+            return [...data].sort((a, b) => {
+                // Use created_at for consistent ordering
+                // This ensures editing won't change position
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            });
+        }
     });
 
     // Get all categories in a flat array (including subcategories)

@@ -93,7 +93,10 @@ const ThreadView: React.FC = () => {
 
     const canModify = canModifyThread(user, thread.author_id, thread.category_id);
     const canDelete = canDeleteContent(user, thread.author_id, thread.category_id);
-    const hasModeratorAccess = user?.role === 'admin' || thread.can_moderate;
+    const hasModeratorAccess = 
+        user && !user.banned_at &&  // Add banned check
+        (user.role === 'admin' || 
+            (user.role === 'moderator' && thread.can_moderate));
 
     const handleDeleteThread = async () => {
         if (!thread) return;
@@ -162,13 +165,6 @@ const ThreadView: React.FC = () => {
                                             </svg>
                                             {new Date(thread.created_at).toLocaleDateString()}
                                         </span>
-                                        {/* Add EditedTimestamp here */}
-                                        {thread.edited_at && (
-                                            <>
-                                                <span>•</span>
-                                                <EditedTimestamp editedAt={thread.edited_at} />
-                                            </>
-                                        )}
                                     </div>
                                 </div>
 
@@ -198,7 +194,7 @@ const ThreadView: React.FC = () => {
                                                 onClick={handleLockToggle}
                                                 disabled={lockMutation.isPending}
                                                 className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 
-                                                         transition-colors duration-200 flex items-center"
+                                                            transition-colors duration-200 flex items-center"
                                             >
                                                 {thread.is_locked ? (
                                                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,7 +237,7 @@ const ThreadView: React.FC = () => {
                         <h3 className="text-xl font-semibold text-blue-900 mb-4">Move Thread</h3>
                         <select
                             className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 
-                                     focus:ring-2 focus:ring-blue-500"
+                                        focus:ring-2 focus:ring-blue-500"
                             onChange={(e) => setTargetCategoryId(Number(e.target.value))}
                             value={targetCategoryId || ''}
                         >
@@ -267,7 +263,7 @@ const ThreadView: React.FC = () => {
                                 onClick={handleMoveThread}
                                 disabled={!targetCategoryId || moveMutation.isPending}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                                         disabled:opacity-50 transition-colors"
+                                            disabled:opacity-50 transition-colors"
                             >
                                 {moveMutation.isPending ? 'Moving...' : 'Move'}
                             </button>

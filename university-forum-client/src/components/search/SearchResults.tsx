@@ -74,9 +74,9 @@ const SearchResults = () => {
     const renderCategoryResult = (category: CategorySearchResult) => (
         <Link
             key={`category-${category.id}`}
-            to={category.url}
+            to={`/categories/${category.id}`}
             className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow 
-                     duration-200 overflow-hidden border-l-4 border-blue-600"
+                        duration-200 overflow-hidden border-l-4 border-blue-600"
         >
             <div className="p-6">
                 <h4 className="text-lg font-semibold text-blue-900">{category.name}</h4>
@@ -88,9 +88,9 @@ const SearchResults = () => {
     const renderThreadResult = (thread: ThreadSearchResult) => (
         <Link
             key={`thread-${thread.id}`}
-            to={thread.url}
+            to={`/threads/${thread.id}`}
             className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow 
-                     duration-200 overflow-hidden border-l-4 border-blue-600"
+                        duration-200 overflow-hidden border-l-4 border-blue-600"
         >
             <div className="p-6">
                 <h4 className="text-lg font-semibold text-blue-900">{thread.title}</h4>
@@ -105,9 +105,9 @@ const SearchResults = () => {
     const renderPostResult = (post: PostSearchResult) => (
         <Link
             key={`post-${post.id}`}
-            to={post.url}
+            to={`/threads/${post.thread_id}#post-${post.id}`}
             className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow 
-                     duration-200 overflow-hidden border-l-4 border-blue-600"
+                        duration-200 overflow-hidden border-l-4 border-blue-600"
         >
             <div className="p-6">
                 <p className="text-gray-600">{post.content}</p>

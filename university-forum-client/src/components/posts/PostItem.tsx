@@ -23,11 +23,45 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
     
     const updateMutation = useMutation({
         mutationFn: () => updatePost(post.id, editContent),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['posts', threadId.toString()] });
+        onSuccess: (updatedPost) => {
+            // Instead of invalidating the whole query, update the post in place
+            queryClient.setQueryData(
+                ['posts', threadId.toString()],
+                (oldData: Post[] | undefined) => {
+                    if (!oldData) return oldData;
+                    
+                    // Create a deep copy of the data
+                    const newData = JSON.parse(JSON.stringify(oldData));
+                    
+                    // Helper function to update post in the tree
+                    const updatePostInTree = (posts: Post[]): boolean => {
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i].id === post.id) {
+                                // Preserve replies when updating
+                                posts[i] = {
+                                    ...updatedPost,
+                                    replies: posts[i].replies
+                                };
+                                return true;
+                            }
+                            // Recursively check replies
+                            if (posts[i].replies && posts[i].replies.length > 0) {
+                                if (updatePostInTree(posts[i].replies)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    };
+
+                    updatePostInTree(newData);
+                    return newData;
+                }
+            );
             setIsEditing(false);
         }
     });
+
 
     const deleteMutation = useMutation({
         mutationFn: () => deletePost(post.id),

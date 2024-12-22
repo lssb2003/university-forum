@@ -6,7 +6,7 @@ class PostsController < ApplicationController
     @posts = Post.where(thread_id: params[:thread_id])
                   .includes(:author)
                   .root_posts
-                  .order(created_at: :asc)
+                  .order(created_at: :asc)  # Always use created_at for consistent ordering
 
     load_nested_replies(@posts)
     render json: @posts,
@@ -34,6 +34,8 @@ class PostsController < ApplicationController
     @post.thread_id = params[:thread_id]
 
     if @post.save
+      # Update thread's updated_at for thread listing ordering
+      @post.thread.touch(:updated_at)
       render json: @post, status: :created
     else
       render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
@@ -44,6 +46,7 @@ class PostsController < ApplicationController
   def update
     @post.edited_at = Time.current
     if @post.update(post_params)
+      # Don't update created_at or change position
       render json: @post
     else
       render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
@@ -68,24 +71,19 @@ class PostsController < ApplicationController
   def load_nested_replies(posts, current_depth = 0)
     return if posts.empty? || current_depth >= 3
 
-    # Get all post IDs to fetch replies for
     post_ids = posts.map(&:id)
 
-    # Fetch all replies for these posts
     replies = Post.where(parent_id: post_ids)
                   .includes(:author)
-                  .order(created_at: :asc)
+                  .order(created_at: :asc)  # Consistently use created_at for ordering
 
-    # Group replies by parent_id
     replies_by_parent = replies.group_by(&:parent_id)
 
-    # Assign replies to their parent posts
     posts.each do |post|
       child_replies = replies_by_parent[post.id] || []
       post.replies = child_replies
 
-      # Recursively load nested replies if there are any and we haven't reached max depth
-      if child_replies.any? && current_depth < 2  # This ensures we load up to level 3
+      if child_replies.any? && current_depth < 2
         load_nested_replies(child_replies, current_depth + 1)
       end
     end
