@@ -21,9 +21,15 @@ class SearchController < ApplicationController
     return render json: { suggestions: [] } if @query.blank?
 
     suggestions = {
-      categories: Category.search_suggestions(@query).map { |c| { id: c.id, text: c.name, type: "category" } },
-      threads: ForumThread.search_suggestions(@query).map { |t| { id: t.id, text: t.title, type: "thread" } },
-      posts: Post.search_suggestions(@query).map { |p| { id: p.id, text: truncate_text(p.content), type: "post" } }
+        categories: Category.search_suggestions(@query).map { |c| { id: c.id, text: c.name, type: "category" } },
+        threads: ForumThread.search_suggestions(@query).map { |t| { id: t.id, text: t.title, type: "thread" } },
+        # Only include non-deleted posts
+        posts: Post.not_deleted.search_suggestions(@query).map { |p| {
+            id: p.id,
+            text: truncate_text(p.content),
+            type: "post",
+            thread_id: p.thread_id
+        }}
     }
 
     render json: { suggestions: suggestions.values.flatten.first(10) }

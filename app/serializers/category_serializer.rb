@@ -1,6 +1,6 @@
 # app/serializers/category_serializer.rb
 class CategorySerializer < ActiveModel::Serializer
-  attributes :id, :name, :description, :parent_category_id
+  attributes :id, :name, :description, :parent_category_id, :edited_at
   has_many :subcategories
   has_many :moderators
 

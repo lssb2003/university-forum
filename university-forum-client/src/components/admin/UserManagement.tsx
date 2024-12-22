@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUsers, updateUserRole, assignModerator } from '../../api/admin';
+import { getUsers, updateUserRole, assignModerator, banUser, unbanUser } from '../../api/admin';
 import { getCategories } from '../../api/categories';
 import { User, Category } from '../../types';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorMessage from '../ui/ErrorMessage';
+
+interface BanDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: (reason: string) => void;
+    userName: string;
+}
 
 interface ModeratorModalProps {
     isOpen: boolean;
@@ -108,14 +115,79 @@ const ModeratorModal: React.FC<ModeratorModalProps> = ({
     );
 };
 
+const BanDialog: React.FC<BanDialogProps> = ({ isOpen, onClose, onConfirm, userName }) => {
+    const [reason, setReason] = useState('');
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full m-4">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    Ban User: {userName}
+                </h3>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Ban Reason
+                    </label>
+                    <textarea
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        className="w-full p-2 border rounded-lg"
+                        rows={3}
+                        placeholder="Enter reason for ban..."
+                    />
+                </div>
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-gray-600"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            if (reason.trim()) {
+                                onConfirm(reason);
+                                onClose();
+                            }
+                        }}
+                        disabled={!reason.trim()}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 
+                                 disabled:opacity-50"
+                    >
+                        Ban User
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const UserManagement: React.FC = () => {
     const queryClient = useQueryClient();
     const [moderatorModalUserId, setModeratorModalUserId] = useState<number | null>(null);
     const [modalError, setModalError] = useState<string | null>(null);
+    const [banDialogUser, setBanDialogUser] = useState<User | null>(null);
 
     const { data: users, isLoading, error } = useQuery({
         queryKey: ['users'],
         queryFn: getUsers
+    });
+
+    const banMutation = useMutation({
+        mutationFn: ({ userId, reason }: { userId: number; reason: string }) =>
+            banUser(userId, reason),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
+
+    const unbanMutation = useMutation({
+        mutationFn: unbanUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
     });
 
     const updateRoleMutation = useMutation({
@@ -209,22 +281,26 @@ const UserManagement: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-blue-800">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                                        Email
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                                        Current Role
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                                        Member Since
-                                    </th>
-                                </tr>
-                            </thead>
+                        <thead className="bg-blue-800">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                    Email
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                    Current Role
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                    Role Actions
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                    Member Since
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                    Account Status
+                                </th>
+                            </tr>
+                        </thead>
+
                             <tbody className="divide-y divide-gray-200">
                                 {users?.map((user: User) => (
                                     <tr key={user.id} className="hover:bg-blue-50 transition-colors">
@@ -247,7 +323,7 @@ const UserManagement: React.FC = () => {
                                                 value=""
                                                 onChange={(e) => handleRoleChange(user.id, e.target.value, user)}
                                                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm
-                                                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                             >
                                                 <option value="">Change role to...</option>
                                                 <option value="user">User</option>
@@ -257,6 +333,37 @@ const UserManagement: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {new Date(user.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            {user.banned_at ? (
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm('Are you sure you want to unban this user?')) {
+                                                            unbanMutation.mutate(user.id);
+                                                        }
+                                                    }}
+                                                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 
+                                                            transition-colors duration-200"
+                                                >
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Unban User
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setBanDialogUser(user)}
+                                                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 
+                                                            transition-colors duration-200"
+                                                >
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    Ban User
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -275,6 +382,19 @@ const UserManagement: React.FC = () => {
                     />
                 )}
             </div>
+            <BanDialog
+                isOpen={!!banDialogUser}
+                onClose={() => setBanDialogUser(null)}
+                onConfirm={(reason) => {
+                    if (banDialogUser) {
+                        banMutation.mutate({
+                            userId: banDialogUser.id,
+                            reason
+                        });
+                    }
+                }}
+                userName={banDialogUser?.email || ''}
+            />
         </div>
     );
 };

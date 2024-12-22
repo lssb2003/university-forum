@@ -48,7 +48,7 @@ const ThreadList: React.FC = () => {
                         <h2 className="text-3xl font-bold text-blue-900">Discussion Threads</h2>
                         <p className="mt-2 text-gray-600">Browse all threads in this category</p>
                     </div>
-                    {user && (
+                    {user && !user.banned_at && (
                         <Link
                             to={`/categories/${categoryId}/new-thread`}
                             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium 

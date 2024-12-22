@@ -31,6 +31,10 @@ class Post < ApplicationRecord
 
   after_create :log_depth
 
+  def self.search_suggestions(query)
+    not_deleted.search(query)
+  end
+
   private
 
   def set_depth

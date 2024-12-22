@@ -8,6 +8,7 @@ import { isAdmin } from '../../utils/permissions';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorMessage from '../ui/ErrorMessage';
 import ConfirmationDialog from '../ui/ConfirmationDialog';
+import CategoryEditModal from './CategoryEditModal';
 
 interface CategoryFormData {
     name: string;
@@ -175,15 +176,6 @@ const CategoryManagement: React.FC = () => {
         }
     });
 
-    useEffect(() => {
-        if (editingCategory) {
-            setFormData({
-                name: editingCategory.name,
-                description: editingCategory.description,
-                parent_category_id: editingCategory.parent_category_id
-            });
-        }
-    }, [editingCategory]);
 
     if (!isAdmin(user)) {
         return <ErrorMessage message="Unauthorized access" />;
@@ -201,19 +193,13 @@ const CategoryManagement: React.FC = () => {
         e.preventDefault();
         setError(null);
     
+        // This form is now ONLY for creating new categories
         const submitData = {
             ...formData,
             parent_category_id: formData.parent_category_id || null
         };
     
-        if (editingCategory) {
-            updateMutation.mutate({ 
-                id: editingCategory.id, 
-                category: submitData 
-            });
-        } else {
-            createMutation.mutate(submitData);
-        }
+        createMutation.mutate(submitData);
     };
 
     const handleDeleteClick = (category: Category) => {
@@ -229,6 +215,25 @@ const CategoryManagement: React.FC = () => {
             console.error('Delete failed:', error);
         }
     };
+
+    const handleUpdateCategory = async (data: {
+        name: string;
+        description: string;
+        parent_category_id: number | null;
+    }) => {
+        if (!editingCategory) return;
+        
+        try {
+            await updateMutation.mutateAsync({
+                id: editingCategory.id,
+                category: data
+            });
+            setEditingCategory(null);
+        } catch (error) {
+            console.error('Failed to update category:', error);
+        }
+    };
+    
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
@@ -299,28 +304,26 @@ const CategoryManagement: React.FC = () => {
                             </p>
                         </div>
                         <div className="flex justify-end space-x-3">
-                            {editingCategory && (
-                                <button
-                                    type="button"
-                                    onClick={resetForm}
-                                    className="px-4 py-2 text-gray-700 hover:text-gray-900"
-                                >
-                                    Cancel
-                                </button>
-                            )}
                             <button
                                 type="submit"
                                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
                                         transition-colors duration-200 disabled:opacity-50"
-                                disabled={createMutation.isPending || updateMutation.isPending}
+                                disabled={createMutation.isPending}
                             >
-                                {createMutation.isPending || updateMutation.isPending 
-                                    ? 'Saving...' 
-                                    : editingCategory ? 'Update Category' : 'Create Category'
-                                }
+                                {createMutation.isPending ? 'Creating...' : 'Create Category'}
                             </button>
                         </div>
                     </form>
+                    {editingCategory && (
+                        <CategoryEditModal
+                            isOpen={true}
+                            onClose={() => setEditingCategory(null)}
+                            onSubmit={handleUpdateCategory}
+                            category={editingCategory}
+                            categories={categories || []}
+                            isSubmitting={updateMutation.isPending}
+                        />
+                    )}
                 </div>
 
                 {/* Categories List */}

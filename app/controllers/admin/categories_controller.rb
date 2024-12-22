@@ -16,6 +16,7 @@ class Admin::CategoriesController < ApplicationController
   end
 
   def update
+    @category.edited_at = Time.current if category_params.except(:parent_category_id).any? { |_, v| v != @category[_] }
     if @category.update(category_params)
       render json: @category
     else

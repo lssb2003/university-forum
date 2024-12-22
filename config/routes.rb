@@ -37,6 +37,8 @@ Rails.application.routes.draw do
     resources :users do
       member do
         put :update_role
+        post :ban
+        post :unban
       end
     end
     resources :moderators, only: [ :create, :destroy ]

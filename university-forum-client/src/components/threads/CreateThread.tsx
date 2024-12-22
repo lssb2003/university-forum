@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createThread } from '../../api/threads';
 import { useForm } from 'react-hook-form';
 import ErrorMessage from '../ui/ErrorMessage';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ThreadFormData {
     title: string;
@@ -15,6 +16,7 @@ const CreateThread: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { register, handleSubmit, formState: { errors } } = useForm<ThreadFormData>();
+    const { user } = useAuth();
 
     const createThreadMutation = useMutation({
         mutationFn: (data: ThreadFormData) => 
@@ -28,6 +30,26 @@ const CreateThread: React.FC = () => {
     const onSubmit = (data: ThreadFormData) => {
         createThreadMutation.mutate(data);
     };
+
+    React.useEffect(() => {
+        if (user?.banned_at) {
+            navigate('/');
+        }
+    }, [user, navigate]);
+
+    if (user?.banned_at) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
+                <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p className="text-sm text-red-600">
+                            Your account is currently restricted and cannot create new content.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">

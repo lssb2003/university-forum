@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_17_055050) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_22_043818) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -21,6 +21,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_17_055050) do
     t.bigint "parent_category_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "edited_at"
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
   end
 
@@ -32,6 +33,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_17_055050) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_locked", default: false
+    t.datetime "edited_at"
     t.index ["author_id"], name: "index_forum_threads_on_author_id"
     t.index ["category_id"], name: "index_forum_threads_on_category_id"
   end
@@ -55,6 +57,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_17_055050) do
     t.datetime "deleted_at"
     t.bigint "parent_id"
     t.integer "depth", default: 0
+    t.datetime "edited_at"
     t.index ["author_id"], name: "index_posts_on_author_id"
     t.index ["parent_id"], name: "index_posts_on_parent_id"
     t.index ["thread_id"], name: "index_posts_on_thread_id"
@@ -68,6 +71,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_17_055050) do
     t.datetime "updated_at", null: false
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
+    t.datetime "banned_at"
+    t.text "ban_reason"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

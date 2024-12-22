@@ -1,6 +1,6 @@
 # app/serializers/post_serializer.rb
 class PostSerializer < ActiveModel::Serializer
-  attributes :id, :content, :created_at, :deleted_at, :depth, :visible_content, :author_id, :can_moderate  # Add author_id
+  attributes :id, :content, :created_at, :deleted_at, :depth, :visible_content, :author_id, :can_moderate, :edited_at
   belongs_to :author, serializer: UserSerializer
   belongs_to :thread
   belongs_to :parent, serializer: PostSerializer, optional: true

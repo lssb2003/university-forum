@@ -1,6 +1,6 @@
 # app/serializers/forum_thread_serializer.rb
 class ForumThreadSerializer < ActiveModel::Serializer
-  attributes :id, :title, :content, :created_at, :category_id, :is_locked, :author_id, :can_moderate
+  attributes :id, :title, :content, :created_at, :category_id, :is_locked, :author_id, :can_moderate, :edited_at
 
   belongs_to :author
   belongs_to :category

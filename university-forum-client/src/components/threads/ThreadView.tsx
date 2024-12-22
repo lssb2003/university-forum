@@ -3,13 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getThread, deleteThread, lockThread, moveThread, unlockThread } from '../../api/threads';
 import { useAuth } from '../../contexts/AuthContext';
-import { canModifyThread, canModerateCategory } from '../../utils/permissions';
+import { canModifyThread, canModerateCategory, canDeleteContent } from '../../utils/permissions';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorMessage from '../ui/ErrorMessage';
 import PostList from '../posts/PostList';
 import CreatePost from '../posts/CreatePost';
 import EditThread from './EditThread';
 import { getCategories } from '../../api/categories';
+import EditedTimestamp from '../ui/EditedTimestamp';
+
 
 const ThreadView: React.FC = () => {
     const { threadId } = useParams<{ threadId: string }>();
@@ -22,8 +24,10 @@ const ThreadView: React.FC = () => {
 
     const { data: thread, isLoading: threadLoading, error: threadError } = useQuery({
         queryKey: ['thread', threadId],
-        queryFn: () => getThread(Number(threadId))
+        queryFn: () => getThread(Number(threadId)),
+        retry: false // Don't retry if thread not found
     });
+
 
     const { data: categories } = useQuery({
         queryKey: ['categories'],
@@ -66,11 +70,29 @@ const ThreadView: React.FC = () => {
     });
 
     if (threadLoading) return <LoadingSpinner />;
-    if (threadError || !thread) return <ErrorMessage message="Failed to load thread" />;
+    if (threadError || !thread) {  // Add !thread check here
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
+                <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Not Found</h2>
+                        <p className="text-gray-600 mb-6">
+                            The content you're looking for might have been deleted or doesn't exist.
+                        </p>
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    const canModify = user?.role === 'admin' || 
-                     user?.id === thread.author_id || 
-                     thread.can_moderate;
+    const canModify = canModifyThread(user, thread.author_id, thread.category_id);
+    const canDelete = canDeleteContent(user, thread.author_id, thread.category_id);
     const hasModeratorAccess = user?.role === 'admin' || thread.can_moderate;
 
     const handleDeleteThread = async () => {
@@ -140,28 +162,35 @@ const ThreadView: React.FC = () => {
                                             </svg>
                                             {new Date(thread.created_at).toLocaleDateString()}
                                         </span>
+                                        {/* Add EditedTimestamp here */}
+                                        {thread.edited_at && (
+                                            <>
+                                                <span>•</span>
+                                                <EditedTimestamp editedAt={thread.edited_at} />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="flex space-x-2 ml-4">
                                     {canModify && (
-                                        <>
-                                            <button
-                                                onClick={() => setIsEditing(true)}
-                                                className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 
-                                                         transition-colors duration-200"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={handleDeleteThread}
-                                                disabled={deleteMutation.isPending}
-                                                className="px-3 py-1 text-sm text-orange-500 hover:text-orange-700 
-                                                         transition-colors duration-200"
-                                            >
-                                                Delete
-                                            </button>
-                                        </>
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 
+                                                    transition-colors duration-200"
+                                        >
+                                            Edit
+                                        </button>
+                                    )}
+                                    {canDelete && (
+                                        <button
+                                            onClick={handleDeleteThread}
+                                            disabled={deleteMutation.isPending}
+                                            className="px-3 py-1 text-sm text-orange-500 hover:text-orange-700 
+                                                    transition-colors duration-200"
+                                        >
+                                            Delete
+                                        </button>
                                     )}
                                     {hasModeratorAccess && (
                                         <>
@@ -196,6 +225,11 @@ const ThreadView: React.FC = () => {
 
                             <div className="mt-6 prose max-w-none text-gray-700">
                                 {thread.content}
+                                {thread.edited_at && (
+                                    <div className="mt-2 text-xs text-gray-500 italic">
+                                    edited {new Date(thread.edited_at).toLocaleString()}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

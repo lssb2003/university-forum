@@ -27,14 +27,22 @@ class ThreadsController < ApplicationController
 
 
   def update
+    @thread.edited_at = Time.current
     if @thread.update(thread_params)
       render json: @thread
     else
-      render json: @thread.errors, status: :unprocessable_entity
+      render json: { errors: @thread.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def create
+    unless current_user.can_create_content?
+      render json: {
+        error: "Your account is currently restricted and cannot create new content."
+      }, status: :forbidden
+      return
+    end
+
     @thread = current_user.forum_threads.build(thread_params)
     @thread.category_id = params[:category_id]
 
@@ -88,7 +96,7 @@ class ThreadsController < ApplicationController
       render json: { errors: @thread.errors.full_messages },
               status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordNotFound => e
+  rescue ActiveRecord::RecordNotFound
     render json: { error: "Category not found" }, status: :not_found
   end
 
@@ -119,7 +127,10 @@ class ThreadsController < ApplicationController
 
 
   def set_thread
-    @thread = ForumThread.find(params[:id])
+    @thread = ForumThread.find_by(id: params[:id])
+    unless @thread
+        render json: { error: "Thread not found" }, status: :not_found
+    end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Thread not found" }, status: :not_found
   end

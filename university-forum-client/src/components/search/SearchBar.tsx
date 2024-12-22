@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getSearchSuggestions } from '../../api/search';
 import { SearchSuggestion } from '../../types/search';
 import debounce from 'lodash/debounce';
+import api from '../../api/client';
+
 
 interface SearchBarProps {
     onSearch?: (query: string) => void;
@@ -93,6 +95,49 @@ const SearchBar = React.forwardRef<HTMLDivElement, SearchBarProps>(({
         }
     };
 
+    const handleSuggestionClick = async (suggestion: SearchSuggestion) => {
+        setIsOpen(false);
+        
+        try {
+            // Navigate based on suggestion type
+            switch (suggestion.type) {
+                case 'category':
+                    // Check if category exists before navigating
+                    const categoryResponse = await api.get(`/categories/${suggestion.id}`);
+                    if (categoryResponse.data) {
+                        navigate(`/categories/${suggestion.id}`);
+                    } else {
+                        throw new Error('Category not found');
+                    }
+                    break;
+                case 'thread':
+                    // Check if thread exists before navigating
+                    const threadResponse = await api.get(`/threads/${suggestion.id}`);
+                    if (threadResponse.data) {
+                        navigate(`/threads/${suggestion.id}`);
+                    } else {
+                        throw new Error('Thread not found');
+                    }
+                    break;
+                case 'post':
+                    // Check if thread exists before navigating
+                    const postThreadResponse = await api.get(`/threads/${suggestion.thread_id}`);
+                    if (postThreadResponse.data) {
+                        navigate(`/threads/${suggestion.thread_id}#post-${suggestion.id}`);
+                    } else {
+                        throw new Error('Thread not found');
+                    }
+                    break;
+                default:
+                    navigate(`/search?q=${encodeURIComponent(suggestion.text)}`);
+            }
+        } catch (error) {
+            // Handle the error - show a message and redirect to search page
+            console.error('Content not found:', error);
+            navigate(`/search?q=${encodeURIComponent(suggestion.text)}`);
+        }
+    };
+
     // Close suggestions when clicking outside
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -157,10 +202,7 @@ const SearchBar = React.forwardRef<HTMLDivElement, SearchBarProps>(({
                     {suggestionsData.suggestions.map((suggestion) => (
                         <button
                             key={`${suggestion.type}-${suggestion.id}`}
-                            onClick={() => {
-                                setIsOpen(false);
-                                navigate(`/search?q=${encodeURIComponent(suggestion.text)}`);
-                            }}
+                            onClick={() => handleSuggestionClick(suggestion)}
                             className="w-full px-4 py-2 text-left hover:bg-blue-50 
                                         flex items-center space-x-2"
                         >

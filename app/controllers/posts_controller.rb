@@ -4,25 +4,32 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.where(thread_id: params[:thread_id])
-                 .includes(:author)
-                 .root_posts
-                 .order(created_at: :asc)
+                  .includes(:author)
+                  .root_posts
+                  .order(created_at: :asc)
 
     load_nested_replies(@posts)
     render json: @posts,
-           include: [
-             "author",
-             "replies",
-             "replies.author",
-             "replies.replies",
-             "replies.replies.author",
-             "replies.replies.replies",
-             "replies.replies.replies.author"
-           ],
-           each_serializer: PostSerializer
+            include: [
+              "author",
+              "replies",
+              "replies.author",
+              "replies.replies",
+              "replies.replies.author",
+              "replies.replies.replies",
+              "replies.replies.replies.author"
+            ],
+            each_serializer: PostSerializer
   end
 
   def create
+    unless current_user.can_create_content?
+      render json: {
+        error: "Your account is currently restricted and cannot create new content."
+      }, status: :forbidden
+      return
+    end
+
     @post = current_user.posts.build(post_params)
     @post.thread_id = params[:thread_id]
 
@@ -33,7 +40,9 @@ class PostsController < ApplicationController
     end
   end
 
+
   def update
+    @post.edited_at = Time.current
     if @post.update(post_params)
       render json: @post
     else

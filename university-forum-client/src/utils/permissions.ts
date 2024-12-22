@@ -15,6 +15,10 @@ export const hasPermission = (user: User | null, requiredRole: 'user' | 'moderat
 };
 
 export const canModifyPost = (user: User | null, authorId: number, categoryId?: number): boolean => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.banned_at) return false; // Add this line
+    if (user.id === authorId) return true;
     return canModifyThread(user, authorId, categoryId); // Use same logic as threads
 };
 
@@ -22,14 +26,16 @@ export const canModifyPost = (user: User | null, authorId: number, categoryId?: 
 export const canModifyThread = (user: User | null, authorId: number, categoryId?: number): boolean => {
     if (!user) return false;
     if (user.role === 'admin') return true;
+    if (user.banned_at) return false;
     if (user.id === authorId) return true;
     return canModerateCategory(user, categoryId);
 };
 
 export const canDeleteContent = (user: User | null, authorId: number, categoryId: number): boolean => {
     if (!user) return false;
+    if (user.banned_at) return false;
     if (user.role === 'admin') return true;
-    if (user.id === authorId) return true;  // Author can always delete their own content
+    if (user.id === authorId) return true;
     if (user.role === 'moderator' && user.moderated_categories?.includes(categoryId)) return true;
     return false;
 };

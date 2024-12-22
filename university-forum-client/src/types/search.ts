@@ -39,6 +39,7 @@ export interface SearchSuggestion {
     id: number;
     text: string;
     type: 'category' | 'thread' | 'post';
+    thread_id?: number;
 }
 
 export interface SearchSuggestionsResponse {
@@ -50,3 +51,4 @@ export interface SearchParams {
     context_type?: 'global' | 'category' | 'thread';
     context_id?: number;
 }
+

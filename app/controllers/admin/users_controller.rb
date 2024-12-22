@@ -1,5 +1,6 @@
 class Admin::UsersController < ApplicationController
   before_action :ensure_admin
+  before_action :set_user, only: [ :update_role, :ban, :unban ]
 
   def index
     @users = User.all
@@ -7,8 +8,6 @@ class Admin::UsersController < ApplicationController
   end
 
   def update_role
-    @user = User.find(params[:id])
-
     User.transaction do
       # If changing from moderator to another role, remove all moderator assignments
       if @user.moderator? && params[:role] != "moderator"
@@ -23,6 +22,21 @@ class Admin::UsersController < ApplicationController
     end
   end
 
+  def ban
+    if @user.update(banned_at: Time.current, ban_reason: params[:reason])
+      render json: @user
+    else
+      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def unban
+    if @user.update(banned_at: nil, ban_reason: nil)
+      render json: @user
+    else
+      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
 
   private
 
@@ -30,5 +44,11 @@ class Admin::UsersController < ApplicationController
     unless current_user&.admin?
       render json: { error: "Unauthorized" }, status: :unauthorized
     end
+  end
+
+  def set_user
+    @user = User.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "User not found" }, status: :not_found
   end
 end

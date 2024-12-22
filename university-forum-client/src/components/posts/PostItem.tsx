@@ -4,6 +4,8 @@ import { updatePost, deletePost, createPost } from '../../api/posts';
 import { Post } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { canModifyPost, canDeleteContent } from '../../utils/permissions';
+import EditedTimestamp from '../ui/EditedTimestamp';
+
 
 interface PostItemProps {
     post: Post;
@@ -64,10 +66,10 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
         }
     };
 
-    const canModify = user?.id === post.author_id || post.can_moderate;
-    const canDelete = user?.id === post.author_id || post.can_moderate;
+    const canModify = canModifyPost(user, post.author_id, categoryId);
+    const canDelete = canDeleteContent(user, post.author_id, categoryId);
     const isMaxDepth = post.depth >= 3;
-    
+    const canReply = user && !user.banned_at && !isMaxDepth;
     // Calculate left margin based on depth
     const depthMargin = `${post.depth * 2}rem`;
 
@@ -79,6 +81,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
                     <div className="flex items-center space-x-2">
                         <div className="text-sm text-gray-500">
                             {post.author?.email || 'Deleted User'} • {new Date(post.created_at).toLocaleDateString()}
+                            
                         </div>
                         {post.depth > 0 && (
                             <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full">
@@ -137,11 +140,16 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
                 ) : (
                     <div className="mt-2 prose">
                         {post.visible_content}
+                        {post.edited_at && (
+                            <div className="mt-2 text-xs text-gray-500 italic">
+                            edited {new Date(post.edited_at).toLocaleString()}
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {/* Reply Button and Form */}
-                {!post.deleted_at && user && !isMaxDepth && (
+                {!post.deleted_at && canReply && (
                     <div className="mt-4">
                         {!isReplying ? (
                             <button
@@ -178,11 +186,18 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
                         )}
                     </div>
                 )}
+
+                {/* Show message for banned users */}
+                {user?.banned_at && !post.deleted_at && (
+                    <div className="mt-4 text-sm text-red-600 bg-red-50 p-2 rounded-md">
+                        Your account is currently restricted and cannot create replies.
+                    </div>
+                )}
                 
                 {/* Max Depth Warning */}
                 {isMaxDepth && user && (
                     <div className="mt-4 text-sm text-orange-600 bg-orange-50 p-2 rounded-md">
-                        Maximum reply depth (Level 3) reached. No further replies allowed at this level.
+                        Maximum reply depth (Level 3) reached.
                     </div>
                 )}
 

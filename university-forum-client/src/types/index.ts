@@ -7,6 +7,8 @@ export interface User {
     role: 'user' | 'moderator' | 'admin';
     created_at: string;
     moderated_categories?: number[]; // Categories this user moderates
+    banned_at: string | null;
+    ban_reason: string | null;
 }
 
 export interface LoginCredentials {
@@ -45,6 +47,7 @@ export interface Category {
     nesting_level: number;
     subcategories: Category[];
     moderators?: ModeratorAssignment[];
+    edited_at: string | null;
 }
 
 
@@ -59,6 +62,7 @@ export interface Thread {
     posts_count: number;
     is_locked: boolean;
     can_moderate: boolean;  // Add this line
+    edited_at: string | null;
 }
 
 export interface Post {
@@ -74,6 +78,7 @@ export interface Post {
     visible_content: string;
     replies: Post[];
     can_moderate: boolean;
+    edited_at: string | null;
 }
 
 

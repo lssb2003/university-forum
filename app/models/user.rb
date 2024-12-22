@@ -39,4 +39,31 @@ class User < ApplicationRecord
 
     @moderated_category_ids = all_categories.uniq
   end
+
+  def banned?
+    banned_at.present?
+  end
+
+  def can_create_content?
+    !banned?
+  end
+
+  def ban!(reason:)
+    update!(
+      banned_at: Time.current,
+      ban_reason: reason
+    )
+  end
+
+  def unban!
+    update!(
+      banned_at: nil,
+      ban_reason: nil
+    )
+  end
+
+  # Method to check if user can post
+  def can_post?
+    !banned? && (role == "user" || role == "moderator" || role == "admin")
+  end
 end

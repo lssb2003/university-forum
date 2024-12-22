@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPost } from '../../api/posts';
 import { useForm } from 'react-hook-form';
 import ErrorMessage from '../ui/ErrorMessage';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface CreatePostProps {
     threadId: number;
@@ -15,6 +16,7 @@ interface PostFormData {
 }
 
 const CreatePost: React.FC<CreatePostProps> = ({ threadId, parentId }) => {
+    const { user } = useAuth();
     const { register, handleSubmit, reset, formState: { errors } } = useForm<PostFormData>();
     const queryClient = useQueryClient();
 
@@ -33,6 +35,16 @@ const CreatePost: React.FC<CreatePostProps> = ({ threadId, parentId }) => {
     const onSubmit = (data: PostFormData) => {
         createPostMutation.mutate(data);
     };
+
+    if (user?.banned_at) {
+        return (
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">
+                    Your account is currently restricted and cannot create new content.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="mt-6 bg-white shadow-sm rounded-lg p-6">

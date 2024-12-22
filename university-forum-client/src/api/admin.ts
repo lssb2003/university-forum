@@ -54,3 +54,14 @@ export const updateCategory = async (categoryId: number, data: {
 export const deleteCategory = async (categoryId: number): Promise<void> => {
     await api.delete(`/admin/categories/${categoryId}`);
 };
+
+
+export const banUser = async (userId: number, reason: string): Promise<User> => {
+    const response = await api.post(`/admin/users/${userId}/ban`, { reason });
+    return response.data;
+};
+
+export const unbanUser = async (userId: number): Promise<User> => {
+    const response = await api.post(`/admin/users/${userId}/unban`);
+    return response.data;
+};
