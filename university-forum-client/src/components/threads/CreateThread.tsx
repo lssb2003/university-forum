@@ -21,14 +21,21 @@ const CreateThread: React.FC = () => {
     const createThreadMutation = useMutation({
         mutationFn: (data: ThreadFormData) => 
             createThread(Number(categoryId), data),
-        onSuccess: () => {
+        onSuccess: (newThread) => {
             queryClient.invalidateQueries({ queryKey: ['threads', categoryId] });
-            navigate(`/categories/${categoryId}`);
+            // Use replace: true to prevent back navigation to the creation form
+            navigate(`/threads/${newThread.id}`, { replace: true });
         },
     });
+    
 
     const onSubmit = (data: ThreadFormData) => {
         createThreadMutation.mutate(data);
+    };
+
+    const handleCancel = () => {
+        // Use replace: true here as well to prevent back navigation to the creation form
+        navigate(`/categories/${categoryId}`, { replace: true });
     };
 
     React.useEffect(() => {
@@ -111,7 +118,7 @@ const CreateThread: React.FC = () => {
                         <div className="flex justify-end space-x-4 pt-4">
                             <button
                                 type="button"
-                                onClick={() => navigate(`/categories/${categoryId}`)}
+                                onClick={handleCancel}
                                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 
                                             hover:bg-gray-50 transition-colors duration-200"
                             >

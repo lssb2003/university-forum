@@ -4,22 +4,53 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.where(thread_id: params[:thread_id])
-                  .includes(:author)
-                  .root_posts
-                  .order(created_at: :asc)  # Always use created_at for consistent ordering
+                 .includes(:author)
+                 .root_posts
+                 .order(created_at: :asc)
 
+    # Handle highlighted post at any depth
+    if params[:highlight_post_id].present?
+      @highlight_post = Post.find_by(id: params[:highlight_post_id])
+
+      if @highlight_post
+        # Build complete ancestry chain from bottom up
+        ancestry_chain = []
+        current = @highlight_post
+
+        while current&.parent_id
+          ancestry_chain.unshift(current)
+          current = Post.find_by(id: current.parent_id)
+        end
+
+        # Include root post if we have one
+        if current && !current.parent_id
+          ancestry_chain.unshift(current)
+
+          # Ensure root post is included in initial posts
+          unless @posts.include?(current)
+            @posts = @posts.or(Post.where(id: current.id))
+          end
+        end
+
+        # Store full ancestry chain for loading
+        @ancestry_chain = ancestry_chain
+      end
+    end
+
+    # Load all replies with ancestry info
     load_nested_replies(@posts)
+
     render json: @posts,
-            include: [
-              "author",
-              "replies",
-              "replies.author",
-              "replies.replies",
-              "replies.replies.author",
-              "replies.replies.replies",
-              "replies.replies.replies.author"
-            ],
-            each_serializer: PostSerializer
+           include: [
+             "author",
+             "replies",
+             "replies.author",
+             "replies.replies",
+             "replies.replies.author",
+             "replies.replies.replies",
+             "replies.replies.replies.author"
+           ],
+           each_serializer: PostSerializer
   end
 
   def create
@@ -68,27 +99,49 @@ class PostsController < ApplicationController
 
   private
 
-  def load_nested_replies(posts, current_depth = 0)
-    return if posts.empty? || current_depth >= 3
 
-    post_ids = posts.map(&:id)
+def load_nested_replies(posts, current_depth = 0)
+  return if posts.empty? || current_depth >= 3
 
-    # Keep original ordering by created_at
-    replies = Post.where(parent_id: post_ids)
-                  .includes(:author)
-                  .order(created_at: :asc)
+  post_ids = posts.map(&:id)
 
-    replies_by_parent = replies.group_by(&:parent_id)
+  # Find all replies for current level posts
+  replies_query = Post.where(parent_id: post_ids)
+                     .includes(:author)
+                     .order(created_at: :asc)
 
-    posts.each do |post|
-      child_replies = replies_by_parent[post.id] || []
-      post.replies = child_replies
+  # If we have an ancestry chain and we're at a matching depth,
+  # ensure we include the ancestor post at this level
+  if @ancestry_chain && @ancestry_chain[current_depth]
+    target_ancestor = @ancestry_chain[current_depth]
+    Rails.logger.debug "Including ancestor #{target_ancestor.id} at depth #{current_depth}"
+    replies_query = replies_query.or(Post.where(id: target_ancestor.id))
+  end
 
-      if child_replies.any? && current_depth < 2
-        load_nested_replies(child_replies, current_depth + 1)
+  replies = replies_query.to_a
+  replies_by_parent = replies.group_by(&:parent_id)
+
+  posts.each do |post|
+    child_replies = replies_by_parent[post.id] || []
+
+    # If we have an ancestry chain and this post is in it,
+    # ensure its child in the chain is included
+    if @ancestry_chain && (chain_index = @ancestry_chain.index(post))
+      next_in_chain = @ancestry_chain[chain_index + 1]
+      if next_in_chain && !child_replies.include?(next_in_chain)
+        child_replies << next_in_chain
+        child_replies.sort_by!(&:created_at)
       end
     end
+
+    post.replies = child_replies
+
+    # Continue loading deeper replies
+    if child_replies.any? && current_depth < 2
+      load_nested_replies(child_replies, current_depth + 1)
+    end
   end
+end
 
   def set_post
     @post = Post.find(params[:id])

@@ -1,8 +1,17 @@
 import api from './client';
 import { Post } from '../types';
 
-export const getPosts = async (threadId: number): Promise<Post[]> => {
-    const response = await api.get(`/threads/${threadId}/posts`);
+export const getPosts = async (threadId: number, highlightPostId?: number): Promise<Post[]> => {
+    const params = new URLSearchParams();
+    if (highlightPostId) {
+        params.append('highlight_post_id', highlightPostId.toString());
+    }
+    const queryString = params.toString();
+    const url = queryString ? 
+        `/threads/${threadId}/posts?${queryString}` : 
+        `/threads/${threadId}/posts`;
+    
+    const response = await api.get(url);
     return response.data;
 };
 

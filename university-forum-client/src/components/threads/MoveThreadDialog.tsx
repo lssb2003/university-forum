@@ -48,15 +48,16 @@ const MoveThreadDialog: React.FC<MoveThreadDialogProps> = ({
     const renderCategoryOption = (category: Category, level: number = 0) => {
         const indent = level * 1.5;
         const isDisabled = category.id === currentCategoryId;
-        // Check if user has permission:
-        // 1. Admin can move to any category
-        // 2. For moderators:
-        //    - If they moderate the parent category, they can move to its subcategories
-        //    - If the category is directly in their moderated_categories list
+        
+        // Updated permission check logic
         const hasPermission = () => {
-            if (!userModeratedCategories) return true; // Admin
+            // If userModeratedCategories is undefined, user is admin
+            if (userModeratedCategories === undefined) return true;
             
-            // Direct permission check
+            // Empty array means not an admin and no moderated categories
+            if (userModeratedCategories.length === 0) return false;
+            
+            // Check direct category permission
             if (userModeratedCategories.includes(category.id)) return true;
             
             // Check parent category permission
@@ -114,7 +115,7 @@ const MoveThreadDialog: React.FC<MoveThreadDialogProps> = ({
                     >
                         <option value="">Choose category...</option>
                         {categories
-                            .filter(cat => !cat.parent_category_id) // Get top-level categories
+                            .filter(cat => !cat.parent_category_id)
                             .map(category => renderCategoryOption(category))}
                     </select>
                 </div>

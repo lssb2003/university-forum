@@ -59,6 +59,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
                 }
             );
             setIsEditing(false);
+            window.history.replaceState(null, '', `#post-${post.id}`);
         }
     });
 

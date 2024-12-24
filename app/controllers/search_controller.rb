@@ -33,18 +33,27 @@ class SearchController < ApplicationController
     return render json: { suggestions: [] } if @query.blank?
 
     posts_suggestions = Post.not_deleted
-                        .where("content ILIKE :query", query: "%#{query}%")
+                        .where("content ILIKE :query", query: "%#{@query}%")
                         .reject(&:deleted?)
                         .map { |p| {
                           id: p.id,
                           text: truncate_text(p.content),
                           type: "post",
-                          thread_id: p.thread_id
+                          thread_id: p.thread_id,
+                          parent_id: p.parent_id  # Add parent_id for UI hints
                         }}
 
+    # Add thread_title to post suggestions
+    posts_suggestions.each do |suggestion|
+      thread = ForumThread.find_by(id: suggestion[:thread_id])
+      suggestion[:thread_title] = thread&.title
+    end
+
     suggestions = {
-      categories: Category.search_suggestions(@query).map { |c| { id: c.id, text: c.name, type: "category" } },
-      threads: ForumThread.search_suggestions(@query).map { |t| { id: t.id, text: t.title, type: "thread" } },
+      categories: Category.search_suggestions(@query)
+                        .map { |c| { id: c.id, text: c.name, type: "category" } },
+      threads: ForumThread.search_suggestions(@query)
+                        .map { |t| { id: t.id, text: t.title, type: "thread" } },
       posts: posts_suggestions
     }
 

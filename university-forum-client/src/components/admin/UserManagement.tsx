@@ -221,6 +221,8 @@ const UserManagement: React.FC = () => {
                     user.id === updatedUser.id ? updatedUser : user
                 );
             });
+
+            window.history.replaceState(null, '', '/admin/users');
         },
     });
 

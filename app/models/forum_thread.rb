@@ -1,4 +1,3 @@
-# app/models/forum_thread.rb
 class ForumThread < ApplicationRecord
   include Searchable # for searching
   belongs_to :category

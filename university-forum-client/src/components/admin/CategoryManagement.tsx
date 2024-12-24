@@ -151,6 +151,7 @@ const CategoryManagement: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ['categories'] });
             resetForm();
             setError(null);
+            window.history.replaceState(null, '', '/admin/categories');
         },
         onError: (error: any) => {
             setError(error.response?.data?.errors?.join(', ') || 'Failed to create category');
@@ -165,6 +166,7 @@ const CategoryManagement: React.FC = () => {
             setEditingCategory(null);
             resetForm();
             setError(null);
+            window.history.replaceState(null, '', '/admin/categories');
         },
         onError: (error: any) => {
             setError(error.response?.data?.errors?.join(', ') || 'Failed to update category');

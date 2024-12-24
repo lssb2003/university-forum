@@ -12,6 +12,24 @@ import EditThread from './EditThread';
 import { getCategories } from '../../api/categories';
 import MoveThreadDialog from './MoveThreadDialog';
 import { getPosts } from '../../api/posts';
+import { Post } from '../../types';
+
+const findPostInTree = (posts: Post[] | undefined, targetId: number): boolean => {
+    if (!posts) return false;
+    
+    for (const post of posts) {
+        // Check current post
+        if (post.id === targetId) return true;
+        
+        // Check replies recursively
+        if (post.replies && findPostInTree(post.replies, targetId)) {
+            return true;
+        }
+    }
+    
+    return false;
+};
+
 
 const ThreadView: React.FC = () => {
     const { threadId } = useParams<{ threadId: string }>();
@@ -24,8 +42,23 @@ const ThreadView: React.FC = () => {
     const location = useLocation();
     const postListRef = useRef<HTMLDivElement>(null);
 
+    const initialHighlightRef = useRef<{
+        postId: number | null;
+        handled: boolean;
+    }>({ postId: null, handled: false });
 
-    const postId = location.hash ? location.hash.replace('#post-', '') : null;
+    const postId = location.hash ? parseInt(location.hash.replace('#post-', '')) : null;
+
+    useEffect(() => {
+        if (postId !== initialHighlightRef.current.postId) {
+            initialHighlightRef.current = {
+                postId: postId,
+                handled: false
+            };
+        }
+    }, [postId]);
+
+    
 
     const { data: thread, isLoading: threadLoading, error: threadError } = useQuery({
         queryKey: ['thread', threadId],
@@ -34,38 +67,83 @@ const ThreadView: React.FC = () => {
     });
 
     const { data: posts, isLoading: postsLoading } = useQuery({
-        queryKey: ['posts', threadId],
-        queryFn: () => getPosts(Number(threadId)),
-        enabled: !!thread // Only fetch posts if we have a thread
+        queryKey: ['posts', threadId, postId],
+        queryFn: () => getPosts(Number(threadId), postId || undefined),
+        enabled: !!thread
     });
 
     useEffect(() => {
-        if (postId && !postsLoading && posts) {
-            // Verify post exists in loaded posts
-            const postExists = posts.some(post => post.id === Number(postId)) || 
-                             posts.some(post => post.replies?.some(reply => reply.id === Number(postId)));
-            
-            if (!postExists) {
-                console.log('Post not found:', postId);
-                return;
+        if (!postsLoading && posts) {
+            console.log('Posts loaded:', posts.length);
+            if (postId) {
+                const found = findPostInTree(posts, postId);
+                console.log('Target post found:', found);
             }
+        }
+    }, [posts, postsLoading, postId]);
 
-            const scrollToPost = () => {
-                const postElement = document.getElementById(`post-${postId}`);
-                if (postElement) {
-                    postElement.scrollIntoView({ behavior: 'smooth' });
-                    postElement.classList.add('bg-yellow-50', 'transition-colors', 'duration-1000');
-                    setTimeout(() => {
-                        postElement.classList.remove('bg-yellow-50');
-                    }, 2000);
-                }
-            };
+    useEffect(() => {
+        if (postId && !postsLoading && posts) {
+            const found = findPostInTree(posts, postId);
+            console.log('Target post found:', found);
 
-            // Try immediately and then retry after a short delay if needed
-            scrollToPost();
-            setTimeout(scrollToPost, 100);
+            // Only proceed if post is found and we haven't handled this postId yet
+            if (found && !initialHighlightRef.current.handled) {
+                const scrollToPost = () => {
+                    const postElement = document.getElementById(`post-${postId}`);
+                    if (postElement) {
+                        console.log('Post element found in DOM:', postId);
+                        
+                        // Ensure parent containers are visible
+                        let current = postElement;
+                        while (current && current.parentElement) {
+                            if (current.style.display === 'none') {
+                                current.style.display = 'block';
+                            }
+                            current = current.parentElement;
+                        }
+
+                        // Scroll into view
+                        postElement.scrollIntoView({ behavior: 'smooth' });
+                        
+                        // Apply highlight
+                        postElement.classList.add('bg-yellow-50', 'transition-colors', 'duration-1000');
+                        setTimeout(() => {
+                            postElement.classList.remove('bg-yellow-50');
+                            // Mark as handled after highlight is complete
+                            initialHighlightRef.current.handled = true;
+                        }, 2000);
+                        
+                    } else {
+                        console.log('Post element not found in DOM:', postId);
+                    }
+                };
+
+                // Initial attempt
+                scrollToPost();
+                
+                // Retry with delays
+                const retryTimes = [100, 250, 500, 1000];
+                const retryTimeouts = retryTimes.map(delay => 
+                    setTimeout(scrollToPost, delay)
+                );
+
+                // Cleanup timeouts
+                return () => {
+                    retryTimeouts.forEach(timeout => clearTimeout(timeout));
+                };
+            }
         }
     }, [postId, posts, postsLoading]);
+
+    useEffect(() => {
+        return () => {
+            initialHighlightRef.current = {
+                postId: null,
+                handled: false
+            };
+        };
+    }, []);
 
 
     const { data: categories } = useQuery({
@@ -108,33 +186,13 @@ const ThreadView: React.FC = () => {
         }
     });
 
-    if (threadError && !thread) {
-        return (
-            <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
-                <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Not Found</h2>
-                        <p className="text-gray-600 mb-6">
-                            The content you're looking for might have been deleted or doesn't exist.
-                        </p>
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                            Go Back
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    
 
     if (threadLoading || (postId && postsLoading)) {
         return <LoadingSpinner />;
     }
-    if (threadError || (postId && !postsLoading && posts && 
-        !posts.some(post => post.id === Number(postId)) && 
-        !posts.some(post => post.replies?.some(reply => reply.id === Number(postId))))) {
+
+    if (threadError || (postId && !postsLoading && posts && !findPostInTree(posts, postId))) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
                 <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -154,6 +212,8 @@ const ThreadView: React.FC = () => {
             </div>
         );
     }
+    
+
 
     if (!thread) return null;
 
@@ -306,7 +366,7 @@ const ThreadView: React.FC = () => {
                         onMove={handleMoveThread}
                         categories={categories || []}
                         currentCategoryId={thread.category_id}
-                        userModeratedCategories={user?.moderated_categories}
+                        userModeratedCategories={user?.role === 'admin' ? undefined : user?.moderated_categories}
                     />
                 )}
 
