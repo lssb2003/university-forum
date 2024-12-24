@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getThread, deleteThread, lockThread, moveThread, unlockThread } from '../../api/threads';
 import { useAuth } from '../../contexts/AuthContext';
 import { canModifyThread, canModerateCategory, canDeleteContent } from '../../utils/permissions';
@@ -10,8 +10,8 @@ import PostList from '../posts/PostList';
 import CreatePost from '../posts/CreatePost';
 import EditThread from './EditThread';
 import { getCategories } from '../../api/categories';
-import EditedTimestamp from '../ui/EditedTimestamp';
-
+import MoveThreadDialog from './MoveThreadDialog';
+import { getPosts } from '../../api/posts';
 
 const ThreadView: React.FC = () => {
     const { threadId } = useParams<{ threadId: string }>();
@@ -21,12 +21,51 @@ const ThreadView: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isMoving, setIsMoving] = useState(false);
     const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
+    const location = useLocation();
+    const postListRef = useRef<HTMLDivElement>(null);
+
+
+    const postId = location.hash ? location.hash.replace('#post-', '') : null;
 
     const { data: thread, isLoading: threadLoading, error: threadError } = useQuery({
         queryKey: ['thread', threadId],
         queryFn: () => getThread(Number(threadId)),
         retry: false // Don't retry if thread not found
     });
+
+    const { data: posts, isLoading: postsLoading } = useQuery({
+        queryKey: ['posts', threadId],
+        queryFn: () => getPosts(Number(threadId)),
+        enabled: !!thread // Only fetch posts if we have a thread
+    });
+
+    useEffect(() => {
+        if (postId && !postsLoading && posts) {
+            // Verify post exists in loaded posts
+            const postExists = posts.some(post => post.id === Number(postId)) || 
+                             posts.some(post => post.replies?.some(reply => reply.id === Number(postId)));
+            
+            if (!postExists) {
+                console.log('Post not found:', postId);
+                return;
+            }
+
+            const scrollToPost = () => {
+                const postElement = document.getElementById(`post-${postId}`);
+                if (postElement) {
+                    postElement.scrollIntoView({ behavior: 'smooth' });
+                    postElement.classList.add('bg-yellow-50', 'transition-colors', 'duration-1000');
+                    setTimeout(() => {
+                        postElement.classList.remove('bg-yellow-50');
+                    }, 2000);
+                }
+            };
+
+            // Try immediately and then retry after a short delay if needed
+            scrollToPost();
+            setTimeout(scrollToPost, 100);
+        }
+    }, [postId, posts, postsLoading]);
 
 
     const { data: categories } = useQuery({
@@ -69,8 +108,7 @@ const ThreadView: React.FC = () => {
         }
     });
 
-    if (threadLoading) return <LoadingSpinner />;
-    if (threadError || !thread) {  // Add !thread check here
+    if (threadError && !thread) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
                 <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -90,6 +128,34 @@ const ThreadView: React.FC = () => {
             </div>
         );
     }
+
+    if (threadLoading || (postId && postsLoading)) {
+        return <LoadingSpinner />;
+    }
+    if (threadError || (postId && !postsLoading && posts && 
+        !posts.some(post => post.id === Number(postId)) && 
+        !posts.some(post => post.replies?.some(reply => reply.id === Number(postId))))) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
+                <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Not Found</h2>
+                        <p className="text-gray-600 mb-6">
+                            The content you're looking for might have been deleted or doesn't exist.
+                        </p>
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!thread) return null;
 
     const canModify = canModifyThread(user, thread.author_id, thread.category_id);
     const canDelete = canDeleteContent(user, thread.author_id, thread.category_id);
@@ -123,19 +189,20 @@ const ThreadView: React.FC = () => {
         }
     };
 
-    const handleMoveThread = async () => {
-        if (!thread || !targetCategoryId) return;
+    const handleMoveThread = async (categoryId: number) => {
+        if (!thread) return;
         
         try {
             await moveMutation.mutateAsync({ 
                 threadId: thread.id, 
-                categoryId: targetCategoryId 
+                categoryId
             });
         } catch (error) {
             console.error('Move failed:', error);
+            throw error; // Let the dialog handle the error
         }
     };
-
+    
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
             <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -210,7 +277,7 @@ const ThreadView: React.FC = () => {
                                             <button
                                                 onClick={() => setIsMoving(true)}
                                                 className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 
-                                                         transition-colors duration-200"
+                                                            transition-colors duration-200"
                                             >
                                                 Move
                                             </button>
@@ -220,12 +287,12 @@ const ThreadView: React.FC = () => {
                             </div>
 
                             <div className="mt-6 prose max-w-none text-gray-700">
-                                {thread.content}
-                                {thread.edited_at && (
-                                    <div className="mt-2 text-xs text-gray-500 italic">
+                            {thread.content}
+                            {thread.edited_at && thread.created_at !== thread.edited_at && (
+                                <div className="mt-2 text-xs text-gray-500 italic">
                                     edited {new Date(thread.edited_at).toLocaleString()}
-                                    </div>
-                                )}
+                                </div>
+                            )}
                             </div>
                         </div>
                     )}
@@ -233,74 +300,44 @@ const ThreadView: React.FC = () => {
 
                 {/* Move Thread Dialog */}
                 {isMoving && hasModeratorAccess && (
-                    <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-                        <h3 className="text-xl font-semibold text-blue-900 mb-4">Move Thread</h3>
-                        <select
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 
-                                        focus:ring-2 focus:ring-blue-500"
-                            onChange={(e) => setTargetCategoryId(Number(e.target.value))}
-                            value={targetCategoryId || ''}
-                        >
-                            <option value="">Select category...</option>
-                            {categories?.map(category => (
-                                <option 
-                                    key={category.id} 
-                                    value={category.id}
-                                    disabled={category.id === thread.category_id}
-                                >
-                                    {category.name}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="mt-4 flex justify-end space-x-3">
-                            <button
-                                onClick={() => setIsMoving(false)}
-                                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleMoveThread}
-                                disabled={!targetCategoryId || moveMutation.isPending}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                                            disabled:opacity-50 transition-colors"
-                            >
-                                {moveMutation.isPending ? 'Moving...' : 'Move'}
-                            </button>
-                        </div>
-                        {moveMutation.error && (
-                            <p className="mt-2 text-sm text-red-600">
-                                Failed to move thread. Please try again.
-                            </p>
-                        )}
-                    </div>
+                    <MoveThreadDialog
+                        isOpen={isMoving}
+                        onClose={() => setIsMoving(false)}
+                        onMove={handleMoveThread}
+                        categories={categories || []}
+                        currentCategoryId={thread.category_id}
+                        userModeratedCategories={user?.moderated_categories}
+                    />
                 )}
 
                 {/* Posts Section */}
-                {!thread.is_locked ? (
-                    <>
-                        <PostList 
-                            threadId={Number(threadId)}
-                            categoryId={thread.category_id}
-                        />
-                        {user && (
-                            <div className="mt-8">
-                                <CreatePost 
-                                    threadId={Number(threadId)}
-                                />
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className="mt-8 p-4 bg-orange-50 border border-orange-200 text-orange-700 rounded-lg 
-                                    flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        This thread has been locked and no new replies can be added.
-                    </div>
-                )}
+                <div ref={postListRef}>
+
+                    {!thread.is_locked ? (
+                        <>
+                            <PostList 
+                                threadId={Number(threadId)}
+                                categoryId={thread.category_id}
+                            />
+                            {user && (
+                                <div className="mt-8">
+                                    <CreatePost 
+                                        threadId={Number(threadId)}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="mt-8 p-4 bg-orange-50 border border-orange-200 text-orange-700 rounded-lg 
+                                        flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            This thread has been locked and no new replies can be added.
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

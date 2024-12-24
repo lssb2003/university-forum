@@ -73,9 +73,10 @@ class PostsController < ApplicationController
 
     post_ids = posts.map(&:id)
 
+    # Keep original ordering by created_at
     replies = Post.where(parent_id: post_ids)
                   .includes(:author)
-                  .order(created_at: :asc)  # Consistently use created_at for ordering
+                  .order(created_at: :asc)
 
     replies_by_parent = replies.group_by(&:parent_id)
 

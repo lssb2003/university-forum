@@ -102,21 +102,29 @@ const SearchResults = () => {
         </Link>
     );
 
-    const renderPostResult = (post: PostSearchResult) => (
-        <Link
-            key={`post-${post.id}`}
-            to={`/threads/${post.thread_id}#post-${post.id}`}
-            className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow 
-                        duration-200 overflow-hidden border-l-4 border-blue-600"
-        >
-            <div className="p-6">
-                <p className="text-gray-600">{post.content}</p>
-                <div className="mt-2 text-sm text-gray-500">
-                    by {post.author.email} in thread #{post.thread_id}
+    const renderPostResult = (post: PostSearchResult) => {
+        // Add validation to ensure thread_id is a valid number
+        if (!post.thread_id || isNaN(post.thread_id)) {
+            console.error('Invalid thread_id for post:', post);
+            return null;
+        }
+
+        return (
+            <Link
+                key={`post-${post.id}`}
+                to={`/threads/${post.thread_id}#post-${post.id}`}
+                className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow 
+                          duration-200 overflow-hidden border-l-4 border-blue-600"
+            >
+                <div className="p-6">
+                    <p className="text-gray-600">{post.content}</p>
+                    <div className="mt-2 text-sm text-gray-500">
+                        by {post.author.email} in thread #{post.thread_id}
+                    </div>
                 </div>
-            </div>
-        </Link>
-    );
+            </Link>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50">
@@ -155,7 +163,9 @@ const SearchResults = () => {
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4">Posts</h3>
                         <div className="space-y-4">
-                            {data.posts.map(renderPostResult)}
+                            {data.posts
+                                .filter(post => post.thread_id && !isNaN(post.thread_id))
+                                .map(renderPostResult)}
                         </div>
                     </div>
                 )}

@@ -29,8 +29,11 @@ class ThreadsController < ApplicationController
 
 
   def update
-    @thread.edited_at = Time.current
-    @thread.updated_at = Time.current  # Explicitly update timestamp
+    # Only set edited_at if content actually changes
+    if thread_params[:title] != @thread.title || thread_params[:content] != @thread.content
+      @thread.edited_at = Time.current
+    end
+
     if @thread.update(thread_params)
       render json: @thread
     else
@@ -48,7 +51,8 @@ class ThreadsController < ApplicationController
 
     @thread = current_user.forum_threads.build(thread_params)
     @thread.category_id = params[:category_id]
-    @thread.updated_at = Time.current  # Set initial updated_at
+    # Explicitly set edited_at to nil on creation
+    @thread.edited_at = nil
 
     if @thread.save
       render json: @thread, status: :created

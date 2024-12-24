@@ -1,10 +1,12 @@
 # app/serializers/post_serializer.rb
 class PostSerializer < ActiveModel::Serializer
-  attributes :id, :content, :created_at, :deleted_at, :depth, :visible_content, :author_id, :can_moderate, :edited_at
+  attributes :id, :content, :created_at, :deleted_at, :depth, :visible_content, :author_id, :can_moderate, :edited_at, :thread_id
   belongs_to :author, serializer: UserSerializer
   belongs_to :thread
   belongs_to :parent, serializer: PostSerializer, optional: true
-  has_many :replies, serializer: PostSerializer
+  has_many :replies, serializer: PostSerializer do
+    object.replies.order(created_at: :asc)
+  end
 
   def can_moderate
     user = scope # current user
@@ -21,5 +23,9 @@ class PostSerializer < ActiveModel::Serializer
 
   def visible_content
     object.visible_content
+  end
+
+  def thread_id
+    object.thread_id.to_i if object.thread_id
   end
 end

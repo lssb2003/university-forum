@@ -8,7 +8,7 @@ class ForumThread < ApplicationRecord
   validates :title, presence: true
   validates :content, presence: true
 
-  before_save :update_timestamps_on_edit
+  before_update :set_edited_at, if: :content_changed_after_create?
 
   def lock!
     puts "Calling lock! method"
@@ -26,7 +26,23 @@ class ForumThread < ApplicationRecord
     add_column :forum_threads, :is_locked, :boolean, default: false
   end
 
+  def self.search(query)
+    where("title ILIKE :query OR content ILIKE :query", query: "%#{query}%")
+  end
+
+  def self.search_suggestions(query)
+    search(query).limit(5)
+  end
+
   private
+
+  def content_changed_after_create?
+    !new_record? && (title_changed? || content_changed?)
+  end
+
+  def set_edited_at
+    self.edited_at = Time.current
+  end
 
   def update_timestamps_on_edit
     if title_changed? || content_changed?

@@ -109,7 +109,11 @@ const PostItem: React.FC<PostItemProps> = ({ post, threadId, categoryId }) => {
 
     return (
         <div style={{ marginLeft: depthMargin }} className="mb-4">
-            <div className={`bg-white shadow-sm rounded-lg p-6 ${post.depth > 0 ? 'border-l-4 border-blue-200' : ''}`}>
+            <div 
+                id={`post-${post.id}`}
+                className={`bg-white shadow-sm rounded-lg p-6 
+                            ${post.depth > 0 ? 'border-l-4 border-blue-200' : ''}`}
+            >
                 {/* Post Header */}
                 <div className="flex justify-between">
                     <div className="flex items-center space-x-2">

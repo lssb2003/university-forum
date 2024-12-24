@@ -4,14 +4,18 @@ class Post < ApplicationRecord
   belongs_to :thread, class_name: "ForumThread"
   belongs_to :author, class_name: "User"
   belongs_to :parent, class_name: "Post", optional: true
-  has_many :replies, class_name: "Post", foreign_key: "parent_id", dependent: :destroy
+  has_many :replies,
+            -> { order("created_at ASC") },
+            class_name: "Post",
+            foreign_key: "parent_id",
+            dependent: :destroy
 
   validates :content, presence: true
   validates :depth, numericality: { less_than_or_equal_to: 3 }
 
   scope :not_deleted, -> { where(deleted_at: nil) }
   scope :deleted, -> { where.not(deleted_at: nil) }
-  scope :root_posts, -> { where(parent_id: nil) }
+  scope :root_posts, -> { where(parent_id: nil).order(created_at: :asc) }
 
   def soft_delete!
     update_column(:deleted_at, Time.current)
@@ -33,6 +37,19 @@ class Post < ApplicationRecord
 
   def self.search_suggestions(query)
     not_deleted.search(query)
+  end
+
+  def self.search(query)
+    not_deleted
+      .where("content ILIKE :query", query: "%#{query}%")
+      .where(deleted_at: nil)  # Double-check deletion status
+  end
+
+  def self.search_suggestions(query)
+    not_deleted
+      .where("content ILIKE :query", query: "%#{query}%")
+      .where(deleted_at: nil)  # Double-check deletion status
+      .limit(5)
   end
 
   private

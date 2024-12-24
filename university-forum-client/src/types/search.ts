@@ -25,6 +25,7 @@ export interface PostSearchResult extends BaseSearchResult {
     content: string;
     author: User;
     thread_id: number;
+    deleted_at: string | null;
 }
 
 export type SearchResult = CategorySearchResult | ThreadSearchResult | PostSearchResult;

@@ -35,4 +35,12 @@ class SearchResultSerializer < ActiveModel::Serializer
       "/threads/#{object.thread_id}#post-#{object.id}"
     end
   end
+
+  def attributes(*args)
+    data = super
+    if object.is_a?(Post)
+      data[:deleted_at] = object.deleted_at
+    end
+    data
+  end
 end
