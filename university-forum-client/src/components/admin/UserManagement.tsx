@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUsers, updateUserRole, assignModerator, banUser, unbanUser } from '../../api/admin';
 import { getCategories } from '../../api/categories';
-import { User, Category } from '../../types';
+import { User } from '../../types';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import ErrorMessage from '../ui/ErrorMessage';
 

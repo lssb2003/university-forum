@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCategories } from '../../api/categories';
 import { createCategory, updateCategory, deleteCategory } from '../../api/admin';

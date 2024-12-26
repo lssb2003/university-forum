@@ -24,10 +24,7 @@ const MoveThreadDialog: React.FC<MoveThreadDialogProps> = ({
 
     if (!isOpen) return null;
 
-    // Get all available categories that the user can move to
-    const getAvailableCategories = () => {
-        return categories.filter(cat => cat.id !== currentCategoryId);
-    };
+    
 
     const handleMove = async () => {
         if (!selectedCategoryId) return;
@@ -86,7 +83,6 @@ const MoveThreadDialog: React.FC<MoveThreadDialogProps> = ({
         );
     };
 
-    const availableCategories = getAvailableCategories();
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

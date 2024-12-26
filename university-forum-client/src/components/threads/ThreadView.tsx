@@ -3,9 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getThread, deleteThread, lockThread, moveThread, unlockThread } from '../../api/threads';
 import { useAuth } from '../../contexts/AuthContext';
-import { canModifyThread, canModerateCategory, canDeleteContent } from '../../utils/permissions';
+import { canModifyThread, canDeleteContent } from '../../utils/permissions';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import ErrorMessage from '../ui/ErrorMessage';
 import PostList from '../posts/PostList';
 import CreatePost from '../posts/CreatePost';
 import EditThread from './EditThread';
@@ -38,7 +37,6 @@ const ThreadView: React.FC = () => {
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = useState(false);
     const [isMoving, setIsMoving] = useState(false);
-    const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
     const location = useLocation();
     const postListRef = useRef<HTMLDivElement>(null);
 
@@ -107,9 +105,9 @@ const ThreadView: React.FC = () => {
                         postElement.scrollIntoView({ behavior: 'smooth' });
                         
                         // Apply highlight
-                        postElement.classList.add('bg-yellow-50', 'transition-colors', 'duration-1000');
+                        postElement.classList.add('bg-orange-200', 'transition-colors', 'duration-1000');
                         setTimeout(() => {
-                            postElement.classList.remove('bg-yellow-50');
+                            postElement.classList.remove('bg-orange-200');
                             // Mark as handled after highlight is complete
                             initialHighlightRef.current.handled = true;
                         }, 2000);

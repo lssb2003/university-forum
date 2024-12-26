@@ -63,10 +63,10 @@ const SearchBar = React.forwardRef<HTMLDivElement, SearchBarProps>(({
         staleTime: 5000
     });
 
-    const debouncedSetQuery = useCallback(
-        debounce((value: string) => setSearchQuery(value), 300),
-        []
-    );
+    const debouncedSetQuery = useCallback((value: string) => {
+        const debouncedFn = debounce((val: string) => setSearchQuery(val), 300);
+        debouncedFn(value);
+    }, []);
 
     const getPlaceholderText = () => {
         switch (currentContext.type) {

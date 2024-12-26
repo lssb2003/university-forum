@@ -4,9 +4,9 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.where(thread_id: params[:thread_id])
-                 .includes(:author)
-                 .root_posts
-                 .order(created_at: :asc)
+                  .includes(:author)
+                  .root_posts
+                  .order(created_at: :asc)
 
     # Handle highlighted post at any depth
     if params[:highlight_post_id].present?
@@ -41,16 +41,16 @@ class PostsController < ApplicationController
     load_nested_replies(@posts)
 
     render json: @posts,
-           include: [
-             "author",
-             "replies",
-             "replies.author",
-             "replies.replies",
-             "replies.replies.author",
-             "replies.replies.replies",
-             "replies.replies.replies.author"
-           ],
-           each_serializer: PostSerializer
+            include: [
+              "author",
+              "replies",
+              "replies.author",
+              "replies.replies",
+              "replies.replies.author",
+              "replies.replies.replies",
+              "replies.replies.replies.author"
+            ],
+            each_serializer: PostSerializer
   end
 
   def create
@@ -100,48 +100,55 @@ class PostsController < ApplicationController
   private
 
 
-def load_nested_replies(posts, current_depth = 0)
-  return if posts.empty? || current_depth >= 3
+  def load_nested_replies(posts, current_depth = 0)
+    return if posts.empty? || current_depth >= 3
 
-  post_ids = posts.map(&:id)
+    post_ids = posts.map(&:id)
 
-  # Find all replies for current level posts
-  replies_query = Post.where(parent_id: post_ids)
-                     .includes(:author)
-                     .order(created_at: :asc)
+    ancestry_posts = if @highlight_post && @ancestry_chain
+      Post.where(id: @ancestry_chain.map(&:id))
+    else
+      Post.none
+    end
 
-  # If we have an ancestry chain and we're at a matching depth,
-  # ensure we include the ancestor post at this level
-  if @ancestry_chain && @ancestry_chain[current_depth]
-    target_ancestor = @ancestry_chain[current_depth]
-    Rails.logger.debug "Including ancestor #{target_ancestor.id} at depth #{current_depth}"
-    replies_query = replies_query.or(Post.where(id: target_ancestor.id))
-  end
+    # Find all replies for current level posts
+    replies_query = Post.where(parent_id: post_ids)
+                      .includes(:author)
+                      .order(created_at: :asc)
+                      .or(ancestry_posts)
 
-  replies = replies_query.to_a
-  replies_by_parent = replies.group_by(&:parent_id)
+    # If we have an ancestry chain and we're at a matching depth,
+    # ensure we include the ancestor post at this level
+    if @ancestry_chain && @ancestry_chain[current_depth]
+      target_ancestor = @ancestry_chain[current_depth]
+      Rails.logger.debug "Including ancestor #{target_ancestor.id} at depth #{current_depth}"
+      replies_query = replies_query.or(Post.where(id: target_ancestor.id))
+    end
 
-  posts.each do |post|
-    child_replies = replies_by_parent[post.id] || []
+    replies = replies_query.to_a
+    replies_by_parent = replies.group_by(&:parent_id)
 
-    # If we have an ancestry chain and this post is in it,
-    # ensure its child in the chain is included
-    if @ancestry_chain && (chain_index = @ancestry_chain.index(post))
-      next_in_chain = @ancestry_chain[chain_index + 1]
-      if next_in_chain && !child_replies.include?(next_in_chain)
-        child_replies << next_in_chain
-        child_replies.sort_by!(&:created_at)
+    posts.each do |post|
+      child_replies = replies_by_parent[post.id] || []
+
+      # If we have an ancestry chain and this post is in it,
+      # ensure its child in the chain is included
+      if @ancestry_chain && (chain_index = @ancestry_chain.index(post))
+        next_in_chain = @ancestry_chain[chain_index + 1]
+        if next_in_chain && !child_replies.include?(next_in_chain)
+          child_replies << next_in_chain
+          child_replies.sort_by!(&:created_at)
+        end
+      end
+
+      post.replies = child_replies
+
+      # Continue loading deeper replies
+      if child_replies.any? && current_depth < 2
+        load_nested_replies(child_replies, current_depth + 1)
       end
     end
-
-    post.replies = child_replies
-
-    # Continue loading deeper replies
-    if child_replies.any? && current_depth < 2
-      load_nested_replies(child_replies, current_depth + 1)
-    end
   end
-end
 
   def set_post
     @post = Post.find(params[:id])
@@ -153,8 +160,8 @@ end
 
   def authorize_post_action
     unless current_user&.admin? ||
-           current_user&.id == @post.author_id ||
-           can_moderate?(@post.thread)
+            current_user&.id == @post.author_id ||
+            can_moderate?(@post.thread)
       render json: { error: "Unauthorized" }, status: :unauthorized
     end
   end

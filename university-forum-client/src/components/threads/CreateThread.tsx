@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createThread } from '../../api/threads';
 import { useForm } from 'react-hook-form';
-import ErrorMessage from '../ui/ErrorMessage';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ThreadFormData {
