@@ -396,49 +396,6 @@ frontend/
    user.role    # Check current role
    ```
 
-## 🚀 Deployment
-
-### Backend Deployment
-
-1. **Heroku**
-   ```bash
-   # Create Heroku app
-   heroku create your-app-name
-
-   # Add PostgreSQL
-   heroku addons:create heroku-postgresql
-
-   # Configure environment variables
-   heroku config:set RAILS_MASTER_KEY=`cat config/master.key`
-   heroku config:set GMAIL_USERNAME=your@email.com
-   heroku config:set GMAIL_PASSWORD=your_password
-
-   # Deploy
-   git push heroku main
-
-   # Run migrations
-   heroku run rails db:migrate
-   ```
-
-2. **Other Platforms**
-   - Set up database
-   - Configure environment variables
-   - Set up Rails master key
-   - Deploy application code
-
-### Frontend Deployment
-
-1. **Build Production Assets**
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. **Deploy to Hosting Service**
-   - Netlify
-   - Vercel
-   - Firebase Hosting
-
 ## 🤝 Contributing
 
 1. Fork the repository
