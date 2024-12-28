@@ -81,7 +81,7 @@ A comprehensive university forum system featuring hierarchical categories, advan
 
 ## 📁 Project Structure
 ```
-university-forum/
+university-forum-api/
 ├── app/
 │   ├── controllers/
 │   │   ├── admin/
@@ -132,7 +132,7 @@ university-forum/
 1. Clone the repository:
 ```bash
 git clone <your-repository-url>
-cd university-forum
+cd university-forum-api
 ```
 
 2. Install Ruby dependencies:
