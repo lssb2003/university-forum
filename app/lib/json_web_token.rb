@@ -1,4 +1,3 @@
-# app/lib/json_web_token.rb
 class JsonWebToken
   SECRET_KEY = Rails.application.secrets.secret_key_base || ENV["JWT_SECRET_KEY"]
 

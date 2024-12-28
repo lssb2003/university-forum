@@ -1,7 +1,6 @@
 class AuthenticationController < ApplicationController
   skip_before_action :authenticate_user, only: [ :login, :register, :forgot_password ]
 
-  # app/controllers/authentication_controller.rb
   def login
     @user = User.find_by_email(params[:email])
     if @user&.authenticate(params[:password])

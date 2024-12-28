@@ -1,4 +1,3 @@
-# app/models/moderator.rb
 class Moderator < ApplicationRecord
   belongs_to :user
   belongs_to :category

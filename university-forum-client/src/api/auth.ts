@@ -3,12 +3,12 @@ import { LoginCredentials, RegisterCredentials, AuthResponse } from '../types';
 
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', credentials);
-    console.log('Login response:', response.data); // Add this log
+    console.log('Login response:', response.data);
     
     // If moderator, fetch their moderated categories
     if (response.data.user.role === 'moderator') {
         const moderatorResponse = await api.get(`/users/${response.data.user.id}/moderated_categories`);
-        console.log('Moderator categories:', moderatorResponse.data); // Add this log
+        console.log('Moderator categories:', moderatorResponse.data);
         response.data.user.moderated_categories = moderatorResponse.data;
     }
     

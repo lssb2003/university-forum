@@ -1,4 +1,3 @@
-# app/serializers/post_serializer.rb
 class PostSerializer < ActiveModel::Serializer
   attributes :id, :content, :created_at, :deleted_at, :depth, :visible_content, :author_id, :can_moderate, :edited_at, :thread_id, :parent_id
   belongs_to :author, serializer: UserSerializer

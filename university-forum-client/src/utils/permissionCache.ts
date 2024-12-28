@@ -1,4 +1,3 @@
-//utils/permissionCache.ts
 import { User } from '../types';
 
 interface PermissionCache {

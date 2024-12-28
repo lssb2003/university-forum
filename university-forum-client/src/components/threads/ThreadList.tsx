@@ -52,8 +52,8 @@ const ThreadList: React.FC = () => {
                         <Link
                             to={`/categories/${categoryId}/new-thread`}
                             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium 
-                                     rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 
-                                     focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                                        rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 
+                                        focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                         >
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -79,20 +79,20 @@ const ThreadList: React.FC = () => {
                                                 <Link
                                                     to={`/threads/${thread.id}`}
                                                     className="text-xl font-semibold text-blue-900 hover:text-blue-700 
-                                                             transition-colors duration-200"
+                                                                transition-colors duration-200"
                                                 >
                                                     {thread.title}
                                                 </Link>
                                                 <div className="mt-2 flex items-center text-sm text-gray-500">
                                                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                     </svg>
                                                     {thread.author.email}
                                                     <span className="mx-2">•</span>
                                                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                     {new Date(thread.created_at).toLocaleDateString()}
                                                 </div>
@@ -104,7 +104,7 @@ const ThreadList: React.FC = () => {
                                                         <Link
                                                             to={`/threads/${thread.id}/edit`}
                                                             className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 
-                                                                     transition-colors duration-200"
+                                                                        transition-colors duration-200"
                                                         >
                                                             Edit
                                                         </Link>
@@ -113,7 +113,7 @@ const ThreadList: React.FC = () => {
                                                         <button
                                                             onClick={() => handleDelete(thread.id)}
                                                             className="px-3 py-1 text-sm text-orange-500 hover:text-orange-700 
-                                                                     transition-colors duration-200"
+                                                                        transition-colors duration-200"
                                                         >
                                                             Delete
                                                         </button>
@@ -124,10 +124,10 @@ const ThreadList: React.FC = () => {
 
                                         {thread.is_locked && (
                                             <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs 
-                                                          font-medium bg-gray-100 text-gray-800">
+                                                            font-medium bg-gray-100 text-gray-800">
                                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                 </svg>
                                                 Locked
                                             </div>

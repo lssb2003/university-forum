@@ -1,4 +1,3 @@
-# app/models/category.rb
 class Category < ApplicationRecord
   include Searchable # for searching
   validates :name, presence: true, uniqueness: true

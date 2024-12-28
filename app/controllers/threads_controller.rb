@@ -1,4 +1,3 @@
-# app/controllers/threads_controller.rb
 class ThreadsController < ApplicationController
   before_action :set_thread, only: [ :show, :update, :destroy, :lock, :unlock ]
   before_action :authorize_thread_action, only: [ :update, :destroy ]

@@ -37,7 +37,7 @@ const CategoryList: React.FC = () => {
                                             key={sub.id}
                                             to={`/categories/${sub.id}`}
                                             className="p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200
-                                                     text-blue-700 text-sm flex items-center group"
+                                                        text-blue-700 text-sm flex items-center group"
                                         >
                                             <svg 
                                                 className="w-4 h-4 mr-2 text-blue-500 group-hover:text-blue-600" 

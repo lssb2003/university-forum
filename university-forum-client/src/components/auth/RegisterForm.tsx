@@ -105,7 +105,7 @@ const RegisterForm: React.FC = () => {
                             type="submit"
                             disabled={registerMutation.isPending}
                             className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                                     disabled:opacity-50 transition-colors duration-200"
+                                        disabled:opacity-50 transition-colors duration-200"
                         >
                             {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
                         </button>
@@ -114,7 +114,7 @@ const RegisterForm: React.FC = () => {
                             type="button"
                             onClick={() => navigate('/')}
                             className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg 
-                                     hover:bg-gray-50 transition-colors duration-200"
+                                        hover:bg-gray-50 transition-colors duration-200"
                         >
                             Back to Forum
                         </button>

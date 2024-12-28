@@ -1,4 +1,3 @@
-// types/index.ts
 
 // User related interfaces
 export interface User {

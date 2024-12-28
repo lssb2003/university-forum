@@ -105,7 +105,7 @@ const MoveThreadDialog: React.FC<MoveThreadDialogProps> = ({
                     </label>
                     <select
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 
-                                 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                    focus:ring-blue-500 focus:border-blue-500 bg-white"
                         value={selectedCategoryId || ''}
                         onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
                     >
@@ -134,7 +134,7 @@ const MoveThreadDialog: React.FC<MoveThreadDialogProps> = ({
                         onClick={handleMove}
                         disabled={!selectedCategoryId || isSubmitting}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                                 disabled:opacity-50"
+                                    disabled:opacity-50"
                     >
                         {isSubmitting ? 'Moving...' : 'Move Thread'}
                     </button>

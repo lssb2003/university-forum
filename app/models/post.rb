@@ -1,4 +1,3 @@
-# app/models/post.rb
 class Post < ApplicationRecord
   include Searchable # for searching
   belongs_to :thread, class_name: "ForumThread"

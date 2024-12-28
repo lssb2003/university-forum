@@ -2,7 +2,7 @@ class ForumThread < ApplicationRecord
   include Searchable # for searching
   belongs_to :category
   belongs_to :author, class_name: "User"
-  has_many :posts, foreign_key: "thread_id", dependent: :destroy  # Add dependent: :destroy
+  has_many :posts, foreign_key: "thread_id", dependent: :destroy
 
   validates :title, presence: true
   validates :content, presence: true

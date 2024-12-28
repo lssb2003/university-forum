@@ -2,7 +2,6 @@
 import api from './client';
 import { User, ModeratorAssignment, Category } from '../types';
 
-// Existing exports
 export const getUsers = async (): Promise<User[]> => {
     const response = await api.get('/admin/users');
     return response.data;
@@ -32,7 +31,7 @@ export const removeModerator = async (moderatorId: number): Promise<void> => {
     await api.delete(`/admin/moderators/${moderatorId}`);
 };
 
-// New category management exports
+// Category management exports
 export const createCategory = async (data: {
     name: string;
     description: string;

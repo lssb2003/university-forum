@@ -1,4 +1,3 @@
-// utils/permissions.ts
 import { User } from '../types';
 import permissionCache from './permissionCache';
 

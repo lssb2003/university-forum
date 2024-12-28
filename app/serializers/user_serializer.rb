@@ -1,4 +1,3 @@
-# app/serializers/user_serializer.rb
 class UserSerializer < ActiveModel::Serializer
   attributes :id, :email, :role, :created_at, :moderated_categories, :banned_at, :ban_reason
 
