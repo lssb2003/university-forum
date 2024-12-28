@@ -1,212 +1,234 @@
 # University Forum Application
 
-<div align="center">
-
-A full-featured university forum system with hierarchical categories, advanced moderation tools, and role-based access control.
-
-[![Ruby](https://img.shields.io/badge/Ruby-3.x-red.svg)](https://www.ruby-lang.org/)
-[![Rails](https://img.shields.io/badge/Rails-7.x-red.svg)](https://rubyonrails.org/)
-[![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue.svg)](https://www.postgresql.org/)
-
-</div>
+A comprehensive university forum system built with Ruby on Rails API backend and React TypeScript frontend, featuring hierarchical categories, advanced moderation tools, and sophisticated role-based access control.
 
 ## 📑 Table of Contents
-- [Project Structure](#-project-structure)
-- [Features](#-features)
-- [Prerequisites](#-prerequisites)
-- [Setup Instructions](#-setup-instructions)
-- [Initial Configuration](#-initial-configuration)
-- [User Roles & Permissions](#-user-roles--permissions)
-- [Using the Application](#-using-the-application)
-- [Troubleshooting](#-troubleshooting)
-
-## 📁 Project Structure
-
-```
-forum-app/                      # Root directory (Rails backend)
-├── app/
-│   ├── controllers/
-│   │   ├── admin/             # Admin controllers
-│   │   ├── authentication_controller.rb
-│   │   ├── categories_controller.rb
-│   │   └── ...
-│   ├── models/
-│   └── serializers/
-├── config/
-├── db/
-└── university-forum-client/    # React frontend
-    ├── src/
-    │   ├── api/
-    │   ├── components/
-    │   ├── contexts/
-    │   └── types/
-    ├── package.json
-    └── tsconfig.json
-```
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Setup Instructions](#setup-instructions)
+- [User Roles & Permissions](#user-roles--permissions)
+- [Core Features Guide](#core-features-guide)
+- [Troubleshooting](#troubleshooting)
 
 ## 🚀 Features
 
+### Authentication System
+- Email-based user registration
+- JWT token authentication
+- Password reset functionality with email notifications
+- Session management and persistence
+- Secure password handling with BCrypt
+
+### Category System
+- Hierarchical structure with main categories and subcategories
+- One-level depth limitation for subcategories
+- Chronological ordering of categories and threads
+- Category-specific moderation capabilities
+- Cascade handling for category deletions
+
+### Thread Management
+- Create and edit threads within categories
+- Thread locking/unlocking functionality
+- Move threads between categories (moderator feature)
+- Chronological and updated-time ordering
+- Edit history tracking
+
+### Post System
+- Threaded discussions with nested replies
+- Maximum 3-level deep nested replies
+- Edit history tracking for all posts
+- Soft delete functionality
+- Chronological ordering within threads
+- Rich text content support
+
 ### Search System
-- Real-time context-aware search
-- Smart suggestions while typing
-- Global and scoped search capabilities
-- Cross-content type searching
-- PostgreSQL full-text search optimization
+- Global search across all content types
+- Context-aware search within categories
+- Real-time search suggestions
+- Fuzzy matching capabilities
+- Results grouped by content type
+- Search within specific categories or threads
 
-### Core Functionality
-- Hierarchical category system with one level of subcategories
-- Threaded discussions with up to 3 levels of nested replies
-- Real-time search with context-aware suggestions
-- Complete user management and moderation system
-- Role-based access control with four distinct user roles
+### Moderation System
+- Comprehensive ban system with reason tracking
+- Thread locking and movement
+- Content moderation tools
+- Category-specific moderator assignments
+- Moderator action tracking
 
-### Technical Features
-- JWT-based authentication
-- Permission caching system
-- Soft delete implementation for posts
-- Chronological ordering of all content
-- PostgreSQL with optimized queries and proper indexing
-- Transaction handling for data integrity
+### User Management
+- Role-based access control (Guest, User, Moderator, Admin)
+- User profile management
+- Password reset capability
+- Ban/unban functionality
+- Email notifications
+- Edit history tracking
+
+## 🛠 Technology Stack
+
+### Backend
+- Ruby 3.1.2
+- Rails 7.2.2
+- PostgreSQL database
+- JWT authentication
+- ActionMailer for emails
+
+### Frontend
+- React 18
+- TypeScript
+- TanStack Query
+- React Router Dom
+- React Hook Form
+- Tailwind CSS
+- Axios for API calls
+
+## 📁 Project Structure
+
+\`\`\`
+forum-app/
+├── app/
+│   ├── controllers/
+│   │   ├── admin/             # Admin controllers
+│   │   │   ├── categories_controller.rb
+│   │   │   ├── moderators_controller.rb
+│   │   │   └── users_controller.rb
+│   │   ├── authentication_controller.rb
+│   │   ├── categories_controller.rb
+│   │   ├── posts_controller.rb
+│   │   ├── search_controller.rb
+│   │   └── threads_controller.rb
+│   ├── models/
+│   │   ├── category.rb
+│   │   ├── forum_thread.rb
+│   │   ├── moderator.rb
+│   │   ├── post.rb
+│   │   └── user.rb
+│   └── serializers/
+├── config/
+│   ├── routes.rb
+│   └── database.yml
+└── university-forum-client/    
+    ├── src/
+    │   ├── api/               # API integration
+    │   ├── components/        # React components
+    │   │   ├── admin/        # Admin dashboard
+    │   │   ├── auth/         # Authentication
+    │   │   ├── categories/   # Category management
+    │   │   ├── posts/        # Post components
+    │   │   ├── threads/      # Thread components
+    │   │   └── ui/           # Reusable UI
+    │   ├── contexts/         # React contexts
+    │   └── types/            # TypeScript types
+    └── package.json
+\`\`\`
 
 ## 📋 Prerequisites
 
-Before installation, ensure you have:
-
-- Ruby 3.x
-- Rails 7.x
-- PostgreSQL 12+ installed and running
+- Ruby 3.1.2
+- Rails 7.2.2
+- PostgreSQL 12+
 - Node.js 16+ and npm
 - Git
-- A text editor (VS Code recommended)
-- Gmail account for email functionality
+- Gmail account (for email functionality)
 
 ## 🔧 Setup Instructions
 
-### Step 1: Clone and Configure Backend
+### Backend Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repository-url>
-   cd forum-app
-   ```
+1. Clone the repository:
+\`\`\`bash
+git clone [your-repository-url]
+cd forum-app
+\`\`\`
 
-2. **Install Ruby dependencies**
-   ```bash
-   bundle install
-   ```
+2. Install Ruby dependencies:
+\`\`\`bash
+bundle install
+\`\`\`
 
-3. **Configure database**
-   
-   Update `config/database.yml`:
-   ```yaml
-   default: &default
-     adapter: postgresql
-     encoding: unicode
-     pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-     username: your_postgres_username
-     password: your_postgres_password
+3. Configure your database:
+Update config/database.yml:
+\`\`\`yaml
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: your_postgres_username
+  password: your_postgres_password
 
-   development:
-     <<: *default
-     database: forum_development
+development:
+  <<: *default
+  database: forum_development
 
-   test:
-     <<: *default
-     database: forum_test
-   ```
+test:
+  <<: *default
+  database: forum_test
+\`\`\`
 
-4. **Set up environment variables**
-   
-   Create `.env` in the root directory:
-   ```env
-   GMAIL_USERNAME=your_email@gmail.com
-   GMAIL_PASSWORD=your_app_specific_password
-   SECRET_KEY_BASE=generate_using_rails_secret
-   CORS_ORIGINS=http://localhost:3001
-   ```
+4. Setup environment variables:
+Create .env in the root directory:
+\`\`\`bash
+GMAIL_USERNAME=your_email@gmail.com
+GMAIL_PASSWORD=your_app_specific_password
+\`\`\`
 
-5. **Initialize database**
-   ```bash
-   rails db:create
-   rails db:migrate
-   ```
+5. Initialize database:
+\`\`\`bash
+rails db:create
+rails db:migrate
+\`\`\`
 
-### Step 2: Configure Frontend
+6. Start Rails server:
+\`\`\`bash
+rails s
+\`\`\`
 
-1. **Navigate to frontend directory**
-   ```bash
-   cd university-forum-client
-   ```
+### Frontend Setup
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+1. Navigate to frontend directory:
+\`\`\`bash
+cd university-forum-client
+\`\`\`
 
-3. **Configure frontend environment**
-   
-   Create `.env` in the university-forum-client directory:
-   ```env
-   REACT_APP_API_URL=http://localhost:3000
-   ```
+2. Install dependencies:
+\`\`\`bash
+npm install
+\`\`\`
 
-### Step 3: Start the Application
+3. Configure environment:
+Create .env file:
+\`\`\`bash
+REACT_APP_API_URL=http://localhost:3000
+\`\`\`
 
-1. **Start the Rails server** (from the root directory)
-   ```bash
-   rails s -p 3000
-   ```
+4. Start development server:
+\`\`\`bash
+npm start
+\`\`\`
 
-2. **In a new terminal, start the React frontend** (from university-forum-client)
-   ```bash
-   cd university-forum-client
-   npm start
-   ```
+### First Admin User Setup
 
-The application will be available at:
-- Frontend: http://localhost:3001
-- Backend API: http://localhost:3000
+1. Start Rails console:
+\`\`\`bash
+rails console
+\`\`\`
 
-## ⚙️ Initial Configuration
-
-### Setting Up the First Admin User
-
-This is crucial for full access to the application. Follow these steps carefully:
-
-1. **Register a new user**
-   - Visit http://localhost:3001/register
-   - Create an account with your email and password
-   - Note down the email used
-
-2. **Access Rails console** (from the root directory)
-   ```bash
-   rails c
-   ```
-
-3. **Elevate user to admin**
-   ```ruby
-   # Find your user
-   user = User.find_by(email: 'your@email.com')
-   
-   # Make them an admin
-   user.update(role: 'admin')
-   
-   # Verify the change
-   puts "User role: #{user.reload.role}"
-   puts "Is admin?: #{user.admin?}"
-   ```
-
-4. **First-time admin tasks**
-   - Log out and log back in
-   - Visit http://localhost:3001/admin
-   - Create initial categories
-   - Set up any additional moderators
+2. Create admin user:
+\`\`\`ruby
+admin = User.new(
+  email: 'admin@example.com',
+  password: 'secure_password',
+  password_confirmation: 'secure_password',
+  role: 'admin'
+)
+admin.save!
+\`\`\`
 
 ## 👥 User Roles & Permissions
 
-### Guest (Not Logged In)
+### Guest
 - View categories, threads, and posts
 - Use search functionality
 - Cannot create or interact with content
@@ -216,171 +238,54 @@ This is crucial for full access to the application. Follow these steps carefully
 - Post replies (up to 3 levels deep)
 - Edit/delete own content
 - Access profile settings
+- Reset password
 - Cannot create content if banned
 
 ### Moderator
-- Moderate assigned categories and their subcategories
-- Lock/unlock threads
+- All registered user privileges
+- Lock/unlock threads in moderated categories
 - Move threads between moderated categories
-- Edit/delete content in moderated areas
+- Edit/delete content in moderated categories
+- Manage subcategories under moderated categories
 - Loses privileges if banned
 
 ### Administrator
 - Full system access
-- Manage categories and subcategories
-- Manage user roles
+- Manage all categories and subcategories
+- Control user roles and permissions
 - Ban/unban users
-- Assign moderators
+- Assign/remove moderators
 - Access admin dashboard
 - Not affected by bans
 
-## 🎯 Using the Application
-
-### Admin Dashboard (/admin)
-
-1. **Category Management**
-   - Create main categories and subcategories
-   - Edit category details
-   - Manage category hierarchy
-   - Delete categories (with cascade handling)
-
-2. **User Management**
-   - View all users
-   - Change user roles
-   - Ban/unban users
-   - Assign moderators to categories
-
-3. **Moderator Assignment**
-   - Select users to be moderators
-   - Assign moderators to specific categories
-   - Manage moderator permissions
-
-### Search Functionality
-
-The application features a sophisticated search system with multiple contexts and real-time suggestions:
-
-1. **Global Search**
-   - Access from any page via the top search bar
-   - Searches across all content types:
-     - Categories and subcategories
-     - Thread titles and content
-     - Post content
-   - Real-time suggestions as you type
-   - Results grouped by content type
-   - Direct navigation to search results
-
-2. **Context-Aware Search**
-   - Category Context:
-     - Automatically scopes search to current category
-     - Includes subcategories in search scope
-     - Shows category-specific suggestions
-   - Thread Context:
-     - Search within current thread
-     - Find specific posts or replies
-     - Highlights matched content
-
-3. **Search Features**
-   - Smart Suggestions:
-     - Shows relevant categories
-     - Displays matching thread titles
-     - Previews post content
-     - Updates in real-time while typing
-   - Quick Navigation:
-     - Click suggestions to jump directly to content
-     - Keyboard navigation through suggestions
-     - Clear categorization of results
-   - Result Highlighting:
-     - Matched terms are highlighted
-     - Context snippets shown
-     - Relevance-based ordering
-
-4. **Technical Implementation**
-   - PostgreSQL full-text search
-   - Trigram similarity for fuzzy matching
-   - Debounced search requests
-   - Optimized query performance
-   - Proper indexing for search fields
-
-5. **Using Search**
-   - Start typing in search bar
-   - Use up/down arrows to navigate suggestions
-   - Press Enter to see full results
-   - Click suggestions for direct navigation
-   - Use filters in results page to refine search
-
-### Content Management
-
-1. **Creating Categories** (Admin only)
-   - Access Admin > Categories
-   - Fill in category details
-   - Optionally select parent category
-   - Maximum one level of nesting
-
-2. **Creating Threads**
-   - Navigate to desired category
-   - Click "New Thread"
-   - Enter title and content
-   - Submit thread
-
-3. **Posting Replies**
-   - Open a thread
-   - Use reply form
-   - Nested replies up to 3 levels
-   - Edit history tracked
-
-### Moderation Tools
-
-1. **Thread Management**
-   - Lock/unlock threads
-   - Move threads between categories
-   - Delete threads if necessary
-
-2. **Content Moderation**
-   - Edit inappropriate content
-   - Delete violating posts
-   - Monitor user behavior
-
 ## ❗ Troubleshooting
 
-### Common Setup Issues
+### Common Issues
 
-1. **Database Connection Errors**
-   ```bash
-   # Verify PostgreSQL is running
-   sudo service postgresql status
+#### Database Connection
+\`\`\`bash
+# Check PostgreSQL status
+sudo service postgresql status
 
-   # Reset database if needed
-   rails db:drop db:create db:migrate
-   ```
+# Reset database
+rails db:drop db:create db:migrate
+\`\`\`
 
-2. **Frontend Connection Issues**
-   - Verify backend is running on port 3000
-   - Check CORS configuration
-   - Verify API URL in frontend .env
+#### Authentication Issues
+\`\`\`ruby
+# In Rails console
+# Clear tokens
+User.update_all(reset_password_token: nil)
+\`\`\`
 
-3. **Authentication Issues**
-   ```ruby
-   # Rails console
-   # Clear user tokens
-   User.update_all(reset_password_token: nil)
-   ```
-
-4. **Permission Issues**
-   ```ruby
-   # Rails console
-   user = User.find_by(email: 'email@example.com')
-   puts "Role: #{user.role}"
-   puts "Moderated categories: #{user.moderated_categories.pluck(:name)}"
-   ```
-
-### Getting Help
-
-If you encounter issues:
-1. Check the Rails server logs
-2. Check the browser console
-3. Verify environment variables
-4. Ensure database configuration is correct
+#### Permission Issues
+\`\`\`ruby
+# In Rails console
+user = User.find_by(email: 'email@example.com')
+puts "Role: #{user.role}"
+puts "Moderated categories: #{user.moderated_categories.pluck(:name)}"
+\`\`\`
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
