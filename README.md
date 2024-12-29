@@ -18,7 +18,7 @@ A sophisticated forum platform built with Ruby on Rails API backend and React Ty
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 
-## 🌟 Overview
+<h2 id="overview">🌟 Overview</h2>
 
 The University Forum Application is a full-stack web application designed to facilitate structured discussions within an academic context. It implements a sophisticated role-based access control system, hierarchical content organization, and advanced moderation tools.
 
