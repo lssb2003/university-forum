@@ -6,17 +6,12 @@ A sophisticated forum platform built with Ruby on Rails API backend and React Ty
 - [Overview](#overview)
 - [Technical Architecture](#technical-architecture)
 - [Features](#features)
-- [Setup Instructions](#setup-&-installation)
+- [Setup & Installation](#setup-&-installation)
 - [Deployment Guide](#deployment-guide)
-- [Authentication System](#authentication-system)
-- [User Roles & Permissions](#user-roles--permissions)
-- [Core Features](#core-features)
-- [API Documentation](#api-documentation)
-- [Frontend Architecture](#frontend-architecture)
-- [Database Design](#database-design)
-- [Testing](#testing)
+- [Database Design](#database-structure)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Project Structure](#project-structure)
 
 <h2 id="overview">🌟 Overview</h2>
 
@@ -31,7 +26,7 @@ The University Forum Application is a full-stack web application designed to fac
 - Responsive React frontend
 - RESTful Rails API backend
 
-## 🛠 Technical Architecture
+<h2 id="overview">🛠 Technical Architecture</h2>
 
 ### Backend Stack
 - Ruby 3.1.2
@@ -54,7 +49,7 @@ The University Forum Application is a full-stack web application designed to fac
 - Ubuntu Server 22.04 LTS
 - AWS EC2 deployment
 
-## 🚀 Features
+<h2 id="overview">🚀 Features</h2>
 
 ### Authentication System
 - **JWT-based Authentication**
@@ -140,7 +135,7 @@ The University Forum Application is a full-stack web application designed to fac
   - Lock/Unlock threads
   - Move thread between categories
 
-## 📋 Setup & Installation
+<h2 id="overview">📋 Setup & Installation</h2>
 
 ### Prerequisites
 - Ruby 3.1.2 (managed with rbenv)
@@ -221,7 +216,7 @@ user = User.find_by(email: 'your@email.com')
 user.update!(role: 'admin')
 ```
 
-## 🌐 Deployment Guide
+<h2 id="overview">🌐 Deployment Guide</h2>
 
 ### AWS EC2 Setup
 
@@ -340,7 +335,7 @@ EOL
 RAILS_ENV=production rails s -d
 ```
 
-## 📊 Database Structure
+<h2 id="overview">📊 Database Structure</h2>
 
 ### Core Tables
 
@@ -403,7 +398,7 @@ create_table "moderators" do |t|
 end
 ```
 
-## 🔧 Troubleshooting
+<h2 id="overview">🔧 Troubleshooting</h2>
 
 ### Common Development Issues
 
@@ -459,7 +454,7 @@ sudo tail -f /var/log/nginx/error.log
 sudo -u postgres psql -c "SELECT * FROM pg_stat_activity;"
 ```
 
-## 🤝 Contributing
+<h2 id="overview">🤝 Contributing</h2>
 
 ### Getting Started
 1. Fork the repository
@@ -482,7 +477,7 @@ sudo -u postgres psql -c "SELECT * FROM pg_stat_activity;"
 4. Ensure the test suite passes
 5. Get approval from maintainers
 
-## 📝 Project Structure
+<h2 id="overview">📝 Project Structure</h2>
 
 ### Backend Structure
 ```
