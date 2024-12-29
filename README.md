@@ -193,6 +193,35 @@ echo "REACT_APP_API_URL=http://localhost:3000" > .env
 npm start
 ```
 
+#### 3. Admin Setup
+
+Choose one of the following methods to create your first admin user:
+Method 1: Create New Admin User
+```bash
+# Start Rails console
+rails console
+
+# Create admin user
+admin = User.new(
+  email: 'admin@example.com',
+  password: 'your_secure_password',
+  password_confirmation: 'your_secure_password',
+  role: 'admin'
+)
+admin.save!
+```
+
+
+Method 2: Upgrade Existing User
+```bash
+# Start Rails console
+rails console
+
+# Find and upgrade user
+user = User.find_by(email: 'your@email.com')
+user.update!(role: 'admin')
+```
+
 ## 🌐 Deployment Guide
 
 ### AWS EC2 Setup
