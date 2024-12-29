@@ -12,6 +12,7 @@ A sophisticated forum platform built with Ruby on Rails API backend and React Ty
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [Project Structure](#project-structure)
+- [Live Demo](#live-demo)
 
 <h2 id="overview">🌟 Overview</h2>
 
@@ -515,3 +516,5 @@ university-forum-client/
 │   └── utils/
 └── package.json
 ```
+<h2 id="live-demo">🎥 Live Demo</h2>
+The application is deployed and can be accessed at: http://52.221.200.135
