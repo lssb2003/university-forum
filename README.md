@@ -196,6 +196,7 @@ npm start
 #### 3. Admin Setup
 
 Choose one of the following methods to create your first admin user:
+
 Method 1: Create New Admin User
 ```bash
 # Start Rails console
@@ -210,7 +211,6 @@ admin = User.new(
 )
 admin.save!
 ```
-
 
 Method 2: Upgrade Existing User
 ```bash
