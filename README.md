@@ -6,7 +6,7 @@ A sophisticated forum platform built with Ruby on Rails API backend and React Ty
 - [Overview](#overview)
 - [Technical Architecture](#technical-architecture)
 - [Features](#features)
-- [Setup & Installation](#setup-&-installation)
+- [Setup & Installation](#setup-installation)
 - [Deployment Guide](#deployment-guide)
 - [Database Design](#database-structure)
 - [Troubleshooting](#troubleshooting)
@@ -26,7 +26,7 @@ The University Forum Application is a full-stack web application designed to fac
 - Responsive React frontend
 - RESTful Rails API backend
 
-<h2 id="overview">🛠 Technical Architecture</h2>
+<h2 id="technical-architecture">🛠 Technical Architecture</h2>
 
 ### Backend Stack
 - Ruby 3.1.2
@@ -49,7 +49,7 @@ The University Forum Application is a full-stack web application designed to fac
 - Ubuntu Server 22.04 LTS
 - AWS EC2 deployment
 
-<h2 id="overview">🚀 Features</h2>
+<h2 id="features">🚀 Features</h2>
 
 ### Authentication System
 - **JWT-based Authentication**
@@ -135,7 +135,7 @@ The University Forum Application is a full-stack web application designed to fac
   - Lock/Unlock threads
   - Move thread between categories
 
-<h2 id="overview">📋 Setup & Installation</h2>
+<h2 id="setup-installation">📋 Setup & Installation</h2>
 
 ### Prerequisites
 - Ruby 3.1.2 (managed with rbenv)
@@ -216,7 +216,7 @@ user = User.find_by(email: 'your@email.com')
 user.update!(role: 'admin')
 ```
 
-<h2 id="overview">🌐 Deployment Guide</h2>
+<h2 id="deployment-guide">🌐 Deployment Guide</h2>
 
 ### AWS EC2 Setup
 
@@ -335,7 +335,7 @@ EOL
 RAILS_ENV=production rails s -d
 ```
 
-<h2 id="overview">📊 Database Structure</h2>
+<h2 id="database-structure">📊 Database Structure</h2>
 
 ### Core Tables
 
@@ -398,7 +398,7 @@ create_table "moderators" do |t|
 end
 ```
 
-<h2 id="overview">🔧 Troubleshooting</h2>
+<h2 id="troubleshooting">🔧 Troubleshooting</h2>
 
 ### Common Development Issues
 
@@ -454,7 +454,7 @@ sudo tail -f /var/log/nginx/error.log
 sudo -u postgres psql -c "SELECT * FROM pg_stat_activity;"
 ```
 
-<h2 id="overview">🤝 Contributing</h2>
+<h2 id="contributing">🤝 Contributing</h2>
 
 ### Getting Started
 1. Fork the repository
@@ -477,7 +477,7 @@ sudo -u postgres psql -c "SELECT * FROM pg_stat_activity;"
 4. Ensure the test suite passes
 5. Get approval from maintainers
 
-<h2 id="overview">📝 Project Structure</h2>
+<h2 id="project-structure">📝 Project Structure</h2>
 
 ### Backend Structure
 ```
