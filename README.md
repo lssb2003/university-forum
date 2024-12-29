@@ -3,10 +3,9 @@
 A sophisticated forum platform built with Ruby on Rails API backend and React TypeScript frontend, featuring hierarchical categories, advanced moderation capabilities, and comprehensive role-based access control.
 
 ## 📑 Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Technical Architecture](#technical-architecture)
-- [Prerequisites](#prerequisites)
+- [Overview](#Overview)
+- [Technical Architecture](#Technical-Architecture)
+- [Features](#Features)
 - [Setup Instructions](#setup-instructions)
 - [Deployment Guide](#deployment-guide)
 - [Authentication System](#authentication-system)
